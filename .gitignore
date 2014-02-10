@@ -1,8 +1,13 @@
+*~
 *.gem
 *.rbc
+*.swp
 .bundle
 .config
+.ruby-gemset
+.ruby-version
 coverage
+Gemfile.lock
 InstalledFiles
 lib/bundler/man
 pkg

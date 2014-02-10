@@ -1,0 +1,26 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'bundler/setup'
+
+require 'sisfc'
+require 'sisfc/evaluation'
+
+
+if __FILE__ == $0
+  unless File.exists? ARGV[0]
+    abort("Usage: #{File.basename(__FILE__)} configuration_file vm_allocation")
+  end
+
+  # load configuration file
+  conf = SISFC::Configuration.load_from(ARGV[0])
+
+  # create a simulator and launch it
+  sim = SISFC::Simulation.new(configuration: conf,
+                              evaluator: SISFC::Evaluator.new(conf))
+  res = sim.evaluate_allocation(ARGV[1..-1].map(&:to_i))
+
+  # Print results
+  puts 'Result:'
+  ap(res, indent: 2)
+end

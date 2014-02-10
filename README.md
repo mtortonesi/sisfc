@@ -1,4 +1,8 @@
-sisfc
-=====
+# A Simulator for IT Service in Federated Clouds (SISFC)
 
-Simulator for IT Service in Federated Clouds
+## Implementation notes
+
+Timestamps are modeled as real values, representing the number of seconds
+elapsed since Unix epoch.
+
+## References
