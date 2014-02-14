@@ -19,10 +19,7 @@ module SISFC
 
 
     def new_event(type, data, time, destination)
-      e = Event.new(:type        => type,
-                    :data        => data,
-                    :time        => time,
-                    :destination => destination)
+      e = Event.new(type, data, time, destination)
       @event_queue << e
     end
 
@@ -43,15 +40,13 @@ module SISFC
       stats    = Statistics.new
       dc_stats = data_centers.map {|k,v| Statistics.new }
 
-      # # check genotype size
-      # unless genotype.size == data_centers.size * @configuration.service_component_types.size
-      #   raise 'Wrong genotype size!'
-      # end
-
       # create VMs
       @vms = []
       vmid = 0
       vm_allocation.each do |opts|
+        # setup service_time_distribution
+        opts[:service_time_distribution] = @configuration.service_component_types[opts[:component_type]][:service_time_distribution]
+
         # allocate the VMs
         opts[:vm_num].times do
           # create VM ...
@@ -71,7 +66,7 @@ module SISFC
       # puts "========== Simulation Start =========="
 
       # generate first request
-      rg = RequestGenerator.new(@configuration.request_generation[:file])
+      rg = RequestGenerator.new(@configuration.request_generation)
       new_req = rg.generate
       new_event(Event::ET_REQUEST_ARRIVAL, new_req, new_req.arrival_time, nil)
 

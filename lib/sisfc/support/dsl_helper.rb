@@ -16,4 +16,3 @@ class Module
     }
   end
 end
-

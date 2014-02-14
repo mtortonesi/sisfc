@@ -1,94 +1,94 @@
-require 'stringio'
-require 'tempfile'
-
 require 'test_helper'
+
+require 'sisfc/reference_configuration'
 
 
 describe SISFC::Configuration do
 
-  MINIMUM_VALID_CONFIG=<<-END
-    start_time Time.utc(1978, 'Aug', 12, 14, 30, 0)
-    warmup_duration 1.hour
-    duration 6.months + 7.days
-  END
-
-  describe 'input source' do
-    it 'should load from string' do
-      SISFC::Configuration.load_from(MINIMUM_VALID_CONFIG)
-    end
-
-    it 'should load from file' do
-      # create temporary file
-      tf = Tempfile.open('MINIMUM_VALID_CONFIG')
-      tf.write(MINIMUM_VALID_CONFIG)
-      tf.close
-
-      begin
-        # create simulation
-        SISFC::Configuration.load_from(tf.path)
-      ensure
-        # delete temporary file
-        tf.delete
-      end
-    end
-
-    it 'should load from StringIO' do
-      SISFC::Configuration.load_from(StringIO.new(MINIMUM_VALID_CONFIG))
-    end
-  end
-
-
   describe 'simulation-related parameters' do
 
     it 'should correctly load simulation start' do
-      conf = SISFC::Configuration.load_from(MINIMUM_VALID_CONFIG)
-      conf.start_time.must_equal Time.utc(1978, 'Aug', 12, 14, 30, 0).to_f
+      with_reference_config do |conf|
+        conf.start_time.must_equal START_TIME
+      end
     end
 
     it 'should correctly load simulation duration' do
-      conf = SISFC::Configuration.load_from(MINIMUM_VALID_CONFIG)
-      conf.duration.must_equal 6.months + 7.days
+      with_reference_config do |conf|
+        conf.duration.must_equal DURATION
+      end
     end
 
-    it 'should correctly load simulation duration' do
-      conf = SISFC::Configuration.load_from(MINIMUM_VALID_CONFIG)
-      conf.end_time.must_equal Time.utc(1978, 'Aug', 12, 14, 30, 0).to_f + 6.months + 7.days
+    it 'should correctly load simulation end time' do
+      with_reference_config do |conf|
+        conf.end_time.must_equal START_TIME + DURATION
+      end
     end
 
     it 'should correctly load warmup phase duration' do
-      conf = SISFC::Configuration.load_from(MINIMUM_VALID_CONFIG)
-      conf.warmup_duration.must_equal 1.hour
+      with_reference_config do |conf|
+        conf.warmup_duration.must_equal WARMUP_DURATION
+      end
     end
+
   end
 
 
-  # it "should initialize incident generation" do
-  #   conf = nil
+  describe 'service_component_types' do
 
-  #   MINIMUM_VALID_CONFIG = <<-END
-  #     incident_generation :type => :random, :source => { :type => :exponential, :mean => 10.0 }
-  #   END
+    it 'should have 3 items' do
+      with_reference_config do |conf|
+        conf.service_component_types.size.must_equal 3
+      end
+    end
 
-  #   lambda {
-  #     conf = SISFC::Configuration.load_from(MINIMUM_VALID_CONFIG)
-  #   }.should_not raise_error
+    it 'should define a Web Server' do
+      with_reference_config do |conf|
+        conf.service_component_types.keys.must_include('Web Server')
+      end
+    end
 
-  #   conf.incident_generation.must_equal { :type => :random, :source => { :type => :exponential, :mean => 10.0 }}
-  # end
+    it 'should define an App Server' do
+      with_reference_config do |conf|
+        conf.service_component_types.keys.must_include('App Server')
+      end
+    end
+
+    it 'should define a Financial Transaction Server' do
+      with_reference_config do |conf|
+        conf.service_component_types.keys.must_include('Financial Transaction Server')
+      end
+    end
+
+    describe 'the Web Server' do
+      it 'should work on medium or large VMs' do
+        with_reference_config do |conf|
+          item_conf = conf.service_component_types['Web Server']
+          item_conf[:allowed_vm_types].must_include(:medium)
+          item_conf[:allowed_vm_types].must_include(:large)
+        end
+      end
+    end
+
+    describe 'the App Server' do
+      it 'should work on large and huge VMs' do
+        with_reference_config do |conf|
+          item_conf = conf.service_component_types['App Server']
+          item_conf[:allowed_vm_types].must_include(:large)
+          item_conf[:allowed_vm_types].must_include(:huge)
+        end
+      end
+    end
+
+  end
 
 
-  # it "should initialize support groups" do
-  #   conf = nil
-
-  #   MINIMUM_VALID_CONFIG = <<-END
-  #     support_groups "SG1" => { :work_time => { :type => :exponential, :mean => 20 },
-  #                               :operators => { :number => 3, :workshift => :all_day_long } }
-  #   END
-
-  #   conf = SISFC::Configuration.load_from(MINIMUM_VALID_CONFIG)
-
-  #   conf.support_groups.must_equal { "SG1" => { :work_time => { :type => :exponential, :mean => 20 },
-  #                                              :operators => { :number => 3, :workshift => :all_day_long } } }
-  # end
+  describe 'data_centers' do
+    it 'should have 5 items' do
+      with_reference_config do |conf|
+        conf.data_centers.size.must_equal 5
+      end
+    end
+  end
 
 end

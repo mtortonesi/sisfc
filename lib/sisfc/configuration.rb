@@ -2,8 +2,7 @@ require 'sisfc/support/dsl_helper'
 
 module SISFC
 
-  class Configuration
-
+  module Configurable
     dsl_accessor :start_time,
                  :duration,
                  :warmup_duration,
@@ -12,6 +11,16 @@ module SISFC
                  :service_component_types,
                  :evaluation,
                  :workflow_types
+  end
+
+  class Configuration
+    include Configurable
+
+    attr_accessor :filename
+
+    def initialize(filename)
+      @filename = filename
+    end
 
     def end_time
       @start_time + @duration
@@ -22,25 +31,23 @@ module SISFC
       @start_time      = @start_time.to_f
       @duration        = @duration.to_f
       @warmup_duration = @warmup_duration.to_f
+
+      # TODO: might want to restrict this substitution only to the :filename
+      # and :command keys
+      @request_generation.each do |k,v|
+        v.gsub!('<pwd>', File.expand_path(File.dirname(@filename)))
+      end
     end
 
-    def self.load_from(input)
+    def self.load_from_file(filename)
       # allow filename, string, and IO objects as input
-      if input.kind_of?(String)
-        if File.exists?(input)
-          input = File.new(input, 'r')
-        else
-          input = StringIO.new(input)
-        end
-      else
-        raise RuntimeError unless input.respond_to?(:read)
-      end
+      raise ArgumentError, "File #{filename} does not exist!" unless File.exists?(filename)
 
       # create configuration object
-      conf = Configuration.new
+      conf = Configuration.new(filename)
 
-      # take the input source contents and pass them to instance_eval
-      conf.instance_eval(input.read)
+      # take the file content and pass it to instance_eval
+      conf.instance_eval(File.new(filename, 'r').read)
 
       # validate and finalize configuration
       conf.validate

@@ -8,12 +8,12 @@ module SISFC
 
     def initialize(opts)
       if opts.has_key? :filename
-        @file = File.open(opts[:filename], mode='r')
-
-        # open trace file
-        raise "File #{opts[:filename]} does not exist!" unless File.exists? opts[:filename]
+        filename = opts[:filename]
+        raise "File #{filename} does not exist!" unless File.exists?(filename)
+        @file = File.open(filename, mode='r')
       elsif opts.has_key? :command
-        @file = IO.popen(opts[:command])
+        command = opts[:command]
+        @file = IO.popen(command)
       else
         raise ArgumentError, 'Need to provide either a filename or a command!'
       end

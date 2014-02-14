@@ -1,24 +1,30 @@
 #!/usr/bin/env ruby
 
-require 'rubygems'
-require 'bundler/setup'
+# should we actually decomment these lines?
+# require 'rubygems'
+# require 'bundler/setup'
+
+require 'awesome_print'
 
 require 'sisfc'
 require 'sisfc/evaluation'
 
 
 if __FILE__ == $0
-  unless File.exists? ARGV[0]
-    abort("Usage: #{File.basename(__FILE__)} configuration_file vm_allocation")
+  unless File.exists? ARGV[0] and File.exists? ARGV[1]
+    abort("Usage: #{File.basename(__FILE__)} simulator_config_file vm_allocation_config_file")
   end
 
-  # load configuration file
-  conf = SISFC::Configuration.load_from(ARGV[0])
+  # load simulation configuration
+  conf = SISFC::Configuration.load_from_file(ARGV[0])
+
+  # load vm allocation
+  vm_allocation = eval(File.read(ARGV[1]))
 
   # create a simulator and launch it
   sim = SISFC::Simulation.new(configuration: conf,
                               evaluator: SISFC::Evaluator.new(conf))
-  res = sim.evaluate_allocation(ARGV[1..-1].map(&:to_i))
+  res = sim.evaluate_allocation(vm_allocation)
 
   # Print results
   puts 'Result:'
