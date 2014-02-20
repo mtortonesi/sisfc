@@ -1,13 +1,15 @@
 #!/usr/bin/env ruby
 
-# should we actually decomment these lines?
-# require 'rubygems'
-# require 'bundler/setup'
-
-require 'awesome_print'
-
-require 'sisfc'
-require 'sisfc/evaluation'
+begin
+  require 'sisfc'
+  require 'sisfc/evaluation'
+  require 'awesome_print'
+rescue LoadError
+  require 'rubygems'
+  require 'sisfc'
+  require 'sisfc/evaluation'
+  require 'awesome_print'
+end
 
 
 if __FILE__ == $0
