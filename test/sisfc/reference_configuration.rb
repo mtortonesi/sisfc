@@ -131,6 +131,17 @@ request_generation \
   command: "<pwd>/generator.R"
 END
 
+EVALUATION_CHARACTERIZATION = <<END
+evaluation \
+  :vm_hourly_cost => [
+    { :data_center => 1, :vm_type => :medium, :cost => 0.160 },
+    { :data_center => 1, :vm_type => :large,  :cost => 0.320 },
+    { :data_center => 2, :vm_type => :medium, :cost => 0.184 },
+    { :data_center => 2, :vm_type => :large,  :cost => 0.368 }
+  ],
+  # 500$ penalties if MTTR takes more than 50 msecs
+  :penalties => lambda {|kpis,dc_kpis| 500.0 if kpis[:mttr] > 0.050 }
+END
 
 # this is the whole reference configuration
 # (useful for spec'ing configuration.rb)
@@ -139,7 +150,8 @@ REFERENCE_CONFIGURATION =
   DATA_CENTERS_CHARACTERIZATION +
   SERVICE_COMPONENT_TYPES_CHARACTERIZATION +
   WORKFLOW_TYPES_CHARACTERIZATION +
-  REQUEST_GENERATION_CHARACTERIZATION
+  REQUEST_GENERATION_CHARACTERIZATION +
+  EVALUATION_CHARACTERIZATION
 
 
 evaluator = Object.new
@@ -151,6 +163,7 @@ evaluator.instance_eval(REFERENCE_CONFIGURATION)
 DATA_CENTERS            = evaluator.data_centers
 SERVICE_COMPONENT_TYPES = evaluator.service_component_types
 WORKFLOW_TYPES          = evaluator.workflow_types
+EVALUATION              = evaluator.evaluation
 
 
 def with_reference_config(opts={})

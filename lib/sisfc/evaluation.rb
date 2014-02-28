@@ -14,7 +14,7 @@ module SISFC
       cost = vm_allocation.inject(0.0) do |s,x|
         hc = @vm_hourly_cost.find{|i| i[:data_center] == x[:dc_id] and i[:vm_type] == x[:vm_size] }
         unless hc
-          raise Error, "Cannot find hourly cost for data center #{x[:dc_id]} and VM size #{x[:vm_size]}!"
+          raise "Cannot find hourly cost for data center #{x[:dc_id]} and VM size #{x[:vm_size]}!"
         end
         s += x[:vm_num] * hc[:cost]
       end
@@ -23,7 +23,7 @@ module SISFC
       # puts "vm allocation cost: #{cost}"
 
       # consider SLO violations
-      penalties = (@penalties_func.nil? ? 0.0 : @penalties_func.call(kpis, dc_kpis))
+      penalties = (@penalties_func.nil? ? 0.0 : (@penalties_func.call(kpis, dc_kpis) or 0.0))
       kpis[:penalties] = penalties
       # puts "slo penalties cost: #{penalties}"
       cost += penalties
