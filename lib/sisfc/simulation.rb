@@ -195,7 +195,7 @@ module SISFC
       fitness = @evaluator.evaluate_business_impact(kpis, dc_kpis, vm_allocation)
       puts "====== Evaluating new allocation ======\n" +
         vm_allocation.map{|x| x.except(:service_time_distribution) }.inspect + "\n" +
-        "kpis #{kpis.to_s}\n" +
+        "kpis: #{kpis.to_s}\n" +
         "dc_kpis: #{dc_kpis.to_s}\n" +
         "=======================================\n"
       fitness
