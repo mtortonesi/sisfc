@@ -50,7 +50,7 @@ module SISFC
         # allocate the VMs
         opts[:vm_num].times do
           # create VM ...
-          vm = VM.new(vmid, opts) # vm = VM.new(vmid, opts.except(:vm_num))
+          vm = VM.new(vmid, opts[:dc_id], opts[:vm_size], opts[:service_time_distribution])
           # ... add it to the vm list ...
           @vms << vm
           # ... and register it in the corresponding data center

@@ -7,20 +7,13 @@ module SISFC
   class VM
 
     # setup readable/accessible attributes
-    ATTRIBUTES = [ :vmid, :dc_id, :size ]
+    attr_reader :vmid, :dc_id, :size
 
-    attr_reader *ATTRIBUTES
-
-    def initialize(vmid, opts)
-      # make sure all the required opts were provided
-      [ :dc_id, :vm_size, :service_time_distribution ].each do |k|
-        raise ArgumentError, "opts[:#{k}] missing" unless opts.has_key? k
-      end
-
+    def initialize(vmid, dc_id, size, service_time_distribution)
       @vmid             = vmid
-      @dcid             = opts[:dc_id]
-      @size             = opts[:vm_size]
-      @service_times_rv = ERV::RandomVariable.new(opts[:service_time_distribution][@size])
+      @dcid             = dc_id
+      @size             = size
+      @service_times_rv = ERV::RandomVariable.new(service_time_distribution[@size])
 
       # initialize request queue and related tracking information
       @busy          = false
