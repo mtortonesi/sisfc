@@ -1,4 +1,10 @@
-require 'test_helper'
+require 'minitest/autorun'
+require 'minitest/spec'
+
+require 'sisfc'
+
+require_relative './reference_configuration'
+
 
 describe SISFC::Request do
 

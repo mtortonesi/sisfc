@@ -1,7 +1,11 @@
-require 'tempfile'
+require 'minitest/autorun'
+require 'minitest/spec'
 
-require 'test_helper'
+require 'tempfile'
+require 'sisfc'
 require 'sisfc/generator'
+
+require_relative './reference_configuration'
 
 
 describe SISFC::RequestGenerator do
