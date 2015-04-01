@@ -11,8 +11,15 @@ rescue LoadError
   require 'awesome_print'
 end
 
+
 def do_abort(message)
-  abort("#{message}\n\nUsage:\n\t#{File.basename(__FILE__)} simulator_config_file vm_allocation_config_file\n\n")
+  abort <<-EOS.gsub(/^\s+\|/, '')
+    |#{message}
+    |
+    |Usage:
+    |    #{File.basename(__FILE__)} simulator_config_file vm_allocation_config_file
+    |
+  EOS
 end
 
 
