@@ -11,10 +11,28 @@ rescue LoadError
   require 'awesome_print'
 end
 
+def do_abort(message)
+  abort("#{message}\n\nUsage:\n\t#{File.basename(__FILE__)} simulator_config_file vm_allocation_config_file\n\n")
+end
+
 
 if __FILE__ == $0
-  unless File.exists? ARGV[0] and File.exists? ARGV[1]
-    abort("Usage: #{File.basename(__FILE__)} simulator_config_file vm_allocation_config_file")
+  # make sure both required arguments were given
+  case ARGV.size
+  when 1 then
+    do_abort("Missing VM allocation configuration file!")
+  when 0 then
+    do_abort("Missing simulator and VM allocation configuration files!")
+  end
+
+  # make sure simulator config file exists
+  unless File.exists? ARGV[0]
+    do_abort("Invalid simulator configuration file!")
+  end
+
+  # make sure vm allocation config file exists
+  unless File.exists? ARGV[1]
+    do_abort("Invalid VM allocation configuration file!")
   end
 
   # load simulation configuration
