@@ -1,7 +1,4 @@
-require 'minitest/autorun'
-require 'minitest/spec'
-
-require 'sisfc'
+require 'minitest_helper'
 
 require_relative './reference_configuration'
 
