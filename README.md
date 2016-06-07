@@ -38,8 +38,7 @@ library](https://github.com/mtortonesi/ruby-mhl)).
 
 ## References
 
-This simulator (more precisely an earlier version of it) was used in the
-following research papers:
+The SISFC simulator was used in the following research papers:
 
 1.  L. Foschini, M. Tortonesi, "Adaptive and Business-driven Service Placement
     in Federated Cloud Computing Environments", in Proceedings of the 8th
@@ -47,9 +46,13 @@ following research papers:
     27 May 2013, Ghent, Belgium.
 
 2.  G. Grabarnik, L. Shwartz, M. Tortonesi, "Business-Driven Optimization of
-    Component Placement for Complex Services in Federated Clouds", to appear in
+    Component Placement for Complex Services in Federated Clouds", in
     Proceedings of the 14th IEEE/IFIP Network Operations and Management Symposium
     (NOMS 2014) - Mini-conference track, 5-9 May 2014, Krakow, Poland.
+
+3.  M. Tortonesi, L. Foschini, "Business-driven Service Placement for Highly
+    Dynamic and Distributed Cloud Systems", IEEE Transactions on Cloud
+    Computing, 2016 (in print).
 
 Please, consider citing some of these papers if you find this simulator useful
 for your research.
