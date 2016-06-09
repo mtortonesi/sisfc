@@ -131,6 +131,13 @@ request_generation \
   command: "<pwd>/generator.R"
 END
 
+
+KPI_CUSTOMIZATION_CHARACTERIZATION = <<END
+kpi_customization \
+  longer_than: [ 2.0, 5.0 ] # count number of requests longer than 2 and 5 seconds respectively
+END
+
+
 EVALUATION_CHARACTERIZATION = <<END
 evaluation \
   :vm_hourly_cost => [
@@ -151,6 +158,7 @@ REFERENCE_CONFIGURATION =
   SERVICE_COMPONENT_TYPES_CHARACTERIZATION +
   WORKFLOW_TYPES_CHARACTERIZATION +
   REQUEST_GENERATION_CHARACTERIZATION +
+  KPI_CUSTOMIZATION_CHARACTERIZATION +
   EVALUATION_CHARACTERIZATION
 
 

@@ -30,6 +30,10 @@ module SISFC
 
 
     def evaluate_allocation(vm_allocation)
+      # initialize request counters
+      reqs_received = 0
+      reqs_longer_than = init_counters_for_longer_than_stats(@configuration.kpi_customization)
+
       # setup simulation start and current time
       @current_time = @start_time = @configuration.start_time
 
@@ -39,6 +43,7 @@ module SISFC
       # initialize statistics
       stats    = Statistics.new
       dc_stats = data_centers.map {|k,v| Statistics.new }
+      reqs_arrived_at_dc = data_centers.map {|k,v| 0 }
 
       # create VMs
       @vms = []
@@ -103,6 +108,9 @@ module SISFC
             # find data center
             data_center = data_centers[req.data_center_id-1]
 
+            # update reqs_arrived_at_dc
+            reqs_arrived_at_dc[req.data_center_id-1] += 1
+
             # find next component name
             workflow = @configuration.workflow_types[req.workflow_type_id]
             next_component_name = workflow[:component_sequence][req.next_step][:name]
@@ -117,6 +125,7 @@ module SISFC
             if req.arrival_time > warmup_threshold
               # increase the number of requests being worked on
               requests_being_worked_on += 1
+              reqs_received += 1
             end
 
             # generate next request
@@ -171,6 +180,12 @@ module SISFC
 
               # collect request statistics
               stats.record_request(req)
+              ttr = req.ttr
+              raise "TTR for request #{req.rid} is nil!" if ttr.nil?
+              reqs_longer_than.each_key do |k|
+                reqs_longer_than[k] += 1 if ttr > k
+              end
+
               dc_stats[req.data_center_id - 1].record_request(req)
             end
 
@@ -184,13 +199,22 @@ module SISFC
 
       # puts "========== Simulation Finished =========="
 
+      # poor man's statistics summary¬
+      puts "received: #{reqs_received}, closed: #{stats.n}, " +
+           "(mean: #{stats.mean}, sd: #{stats.variance}, gt: #{reqs_longer_than.to_s})"
+
       # calculate kpis (for the moment, we only have mttr)
       kpis = { :mttr            => stats.mean,
+               :ttr_sd          => stats.variance,
                :served_requests => stats.n,
-               :queued_requests => requests_being_worked_on }
-      dc_kpis = dc_stats.map do |s|
-        { :mttr            => s.mean,
-          :served_requests => s.n, }
+               :queued_requests => requests_being_worked_on,
+               :longer_than     => reqs_longer_than,
+      }
+      dc_kpis = dc_stats.each_with_index.map do |s,i|
+        { :mttr              => s.mean,
+          :ttr_sd            => s.variance,
+          :served_requests   => s.n, 
+          :received_requests => reqs_arrived_at_dc[i], }
       end
       fitness = @evaluator.evaluate_business_impact(kpis, dc_kpis, vm_allocation)
       puts "====== Evaluating new allocation ======\n" +
@@ -200,6 +224,18 @@ module SISFC
         "=======================================\n"
       fitness
     end
+
+    private
+      def init_counters_for_longer_than_stats(custom_kpis_config)
+        # prepare an infinite length enumerator that always returns zero
+        zeros = Enumerator.new(){|x| loop do x << 0 end }
+
+        Hash[
+          # wrap the values in custom_kpis_config[:longer_than] in an array
+          Array(custom_kpis_config[:longer_than]).
+            # and interval the numbers contained in that array with zeroes
+            zip(zeros) ]
+      end
 
   end
 end

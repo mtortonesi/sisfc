@@ -10,7 +10,8 @@ module SISFC
                  :data_centers,
                  :service_component_types,
                  :evaluation,
-                 :workflow_types
+                 :workflow_types,
+                 :kpi_customization
   end
 
   class Configuration
@@ -31,6 +32,9 @@ module SISFC
       @start_time      = @start_time.to_f
       @duration        = @duration.to_f
       @warmup_duration = @warmup_duration.to_f
+
+      # initialize kpi_customization to empty hash if needed
+      @kpi_customization ||= {}
 
       # TODO: might want to restrict this substitution only to the :filename
       # and :command keys
