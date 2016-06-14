@@ -59,7 +59,13 @@ module SISFC
           # ... add it to the vm list ...
           @vms << vm
           # ... and register it in the corresponding data center
-          data_centers[opts[:dc_id]-1].add_vm(vm, opts[:component_type])
+          unless data_centers[opts[:dc_id]-1].add_vm(vm, opts[:component_type])
+            puts "====== Unfeasible allocation ======"
+            # here we return Float::MAX instead of, e.g., Float::INFINITY,
+            # because the latter would break optimization tools. instead, we
+            # want to have a very high but comparable value.
+            return Float::MAX
+          end
           # update vm id
           vmid += 1
         end
