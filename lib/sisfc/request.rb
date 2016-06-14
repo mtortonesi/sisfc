@@ -26,35 +26,35 @@ module SISFC
       # consider initial communication latency
       @tracking_information  = [
         {
-          :type     => :communication,
-          :at       => @generation_time,
-          :duration => @communication_latency,
+          type:     :communication,
+          at:       @generation_time,
+          duration: @communication_latency,
         }
       ]
 
       # NOTE: the format for each element of the @tracking_information array is:
-      # { :type => one of [ :queue, :work, :communication ]
-      #   :at => begin time
-      #   :duration => duration
-      #   :vm => vm (optional)
+      # { type:     one of [ :queue, :work, :communication ]
+      #   at:       begin time
+      #   duration: duration
+      #   vm:       vm (optional)
       # }
     end
 
     def queuing_completed(start, duration)
       @tracking_information << {
-        :type     => :queue,
-        :at       => start,
-        :duration => duration,
-        # :vm =>
+        type:     :queue,
+        at:       start,
+        duration: duration,
+        # vm:
       }
     end
 
     def step_completed(start, duration)
       @tracking_information << {
-        :type     => :work,
-        :at       => start,
-        :duration => duration,
-        # :vm =>
+        type:     :work,
+        at:       start,
+        duration: duration,
+        # vm:
       }
       @step += 1
     end
@@ -62,9 +62,9 @@ module SISFC
     def finished_processing(time)
       # consider final communication latency
       @tracking_information << {
-        :type     => :communication,
-        :at       => time,
-        :duration => @communication_latency,
+        type:     :communication,
+        at:       time,
+        duration: @communication_latency,
       }
       # save closure time
       @closure_time = time + @communication_latency

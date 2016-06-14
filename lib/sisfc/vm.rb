@@ -28,7 +28,7 @@ module SISFC
       @request_queue << [ r, @service_times_rv.next, time ]
 
       # update queue size tracking information
-      # @request_queue_info << { :size => @request_queue.size, :time => time }
+      # @request_queue_info << { size: @request_queue.size, time: time }
 
       unless @busy
         # try to allocate operator

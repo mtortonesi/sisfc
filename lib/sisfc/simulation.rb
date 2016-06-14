@@ -204,17 +204,17 @@ module SISFC
            "(mean: #{stats.mean}, sd: #{stats.variance}, gt: #{reqs_longer_than.to_s})"
 
       # calculate kpis (for the moment, we only have mttr)
-      kpis = { :mttr            => stats.mean,
-               :ttr_sd          => stats.variance,
-               :served_requests => stats.n,
-               :queued_requests => requests_being_worked_on,
-               :longer_than     => reqs_longer_than,
+      kpis = { mttr:            stats.mean,
+               ttr_sd:          stats.variance,
+               served_requests: stats.n,
+               queued_requests: requests_being_worked_on,
+               longer_than:     reqs_longer_than,
       }
       dc_kpis = dc_stats.each_with_index.map do |s,i|
-        { :mttr              => s.mean,
-          :ttr_sd            => s.variance,
-          :served_requests   => s.n, 
-          :received_requests => reqs_arrived_at_dc[i], }
+        { mttr:              s.mean,
+          ttr_sd:            s.variance,
+          served_requests:   s.n,
+          received_requests: reqs_arrived_at_dc[i], }
       end
       fitness = @evaluator.evaluate_business_impact(kpis, dc_kpis, vm_allocation)
       puts "====== Evaluating new allocation ======\n" +
