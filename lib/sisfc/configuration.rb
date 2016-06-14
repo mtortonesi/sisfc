@@ -11,7 +11,8 @@ module SISFC
                  :service_component_types,
                  :evaluation,
                  :workflow_types,
-                 :kpi_customization
+                 :kpi_customization,
+                 :constraints
   end
 
   class Configuration

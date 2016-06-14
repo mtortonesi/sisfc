@@ -126,6 +126,32 @@ workflow_types \
 END
 
 
+CONSTRAINT_CHARACTERIZATION = <<END
+constraints \
+  'Web Server' => [
+    { data_center: 1, min: 0, max: 300 },
+    { data_center: 2, min: 0, max: 300 },
+    { data_center: 3, min: 0, max: 300 },
+    { data_center: 4, min: 0, max: 300 },
+    { data_center: 5, min: 0, max: 300 },
+  ],
+  'App Server' => [
+    { data_center: 1, min: 0, max: 300 },
+    { data_center: 2, min: 0, max: 300 },
+    { data_center: 3, min: 0, max: 300 },
+    { data_center: 4, min: 0, max: 300 },
+    { data_center: 5, min: 0, max: 300 },
+  ],
+  'Financial Transaction Server' => [
+    { data_center: 1, number: 1 },
+    { data_center: 2, number: 0 },
+    { data_center: 3, number: 0 },
+    { data_center: 4, number: 0 },
+    { data_center: 5, number: 0 },
+  ]
+END
+
+
 REQUEST_GENERATION_CHARACTERIZATION = <<END
 request_generation \
   command: "<pwd>/generator.R"
@@ -157,6 +183,7 @@ REFERENCE_CONFIGURATION =
   DATA_CENTERS_CHARACTERIZATION +
   SERVICE_COMPONENT_TYPES_CHARACTERIZATION +
   WORKFLOW_TYPES_CHARACTERIZATION +
+  CONSTRAINT_CHARACTERIZATION +
   REQUEST_GENERATION_CHARACTERIZATION +
   KPI_CUSTOMIZATION_CHARACTERIZATION +
   EVALUATION_CHARACTERIZATION
