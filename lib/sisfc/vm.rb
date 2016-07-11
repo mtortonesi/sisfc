@@ -61,7 +61,7 @@ module SISFC
           req, service_time, arrival_time = @request_queue.shift
 
           # update the request's queuing information
-          req.queuing_completed(arrival_time, time - arrival_time)
+          req.update_queuing(time - arrival_time)
 
           # the VM is busy now
           @busy = true

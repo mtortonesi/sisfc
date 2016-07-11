@@ -2,6 +2,8 @@ module SISFC
 
   class DataCenter
 
+    attr_reader :dcid
+
     def initialize(id, opts)
       @dcid      = id
       @available = opts[:maximum_vm_capacity]

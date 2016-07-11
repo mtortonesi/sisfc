@@ -41,9 +41,10 @@ module SISFC
       data_centers = @configuration.data_centers.map {|k,v| DataCenter.new(k,v) }
 
       # initialize statistics
-      stats    = Statistics.new
-      dc_stats = data_centers.map {|k,v| Statistics.new }
-      reqs_arrived_at_dc = data_centers.map {|k,v| 0 }
+      stats = Statistics.new
+      num_customers = @configuration.customers.size
+      customer_stats = Array.new(num_customers) { Statistics.new }
+      reqs_received_from_customer = Array.new(num_customers) { Statistics.new }
 
       # create VMs
       @vms = []
@@ -91,6 +92,7 @@ module SISFC
       warmup_threshold = @configuration.start_time + @configuration.warmup_duration.to_i
 
       requests_being_worked_on = 0
+      requests_forwarded_to_other_dcs = 0
       events = 0
 
       # launch simulation
@@ -114,8 +116,8 @@ module SISFC
             # find data center
             data_center = data_centers[req.data_center_id-1]
 
-            # update reqs_arrived_at_dc
-            reqs_arrived_at_dc[req.data_center_id-1] += 1
+            # update reqs_received_from_customer
+            reqs_received_from_customer[req.customer_id] += 1
 
             # find next component name
             workflow = @configuration.workflow_types[req.workflow_type_id]
@@ -161,14 +163,64 @@ module SISFC
               # find next component name
               next_component_name = workflow[:component_sequence][req.next_step][:name]
 
-              # get random vm providing next service component type
+              # get random VM providing next service component type
               new_vm = data_center.get_random_vm(next_component_name)
 
-              # forward request to the new vm
-              new_vm.new_request(self, req, e.time)
+              # this is the request's time of arrival at the new VM
+              forwarding_time = e.time
+
+              # there might not be a VM of the type we need in the current data
+              # center, so look in the other data centers
+              unless new_vm
+                other_dcs = data_centers.collect_if {|x| x != dc }
+                other_dcs = order_dcs(other_dcs, closest_to: dc)
+                other_dcs.each do |dc|
+                  new_vm = dc.get_random_vm(next_component_name)
+                  if new_vm
+                    # need to update data_center_id of request
+                    req.data_center_id = dc.dcid
+
+                    # keep track of transmission time
+                    transmission_time =
+                      @configuration.communication_latency(data_center.location_id,
+                                                           dc.location_id)
+                    req.update_transfer_time(transmission_time)
+                    forwarding_time += transmission_time
+
+                    # update request's current data_center_id
+                    req.data_center_id = dc.dcid
+
+                    # keep track of number of requests forwarded to other data centers
+                    requests_forwarded_to_other_dcs += 1
+
+                    # we're done here
+                    break
+                  end
+                end
+              end
+
+              # make sure we actually found a VM
+              raise "Cannot find VM running a component of type " +
+                    "#{next_component_name} in any data center!" unless new_vm
+
+              # forward request to the new VM
+              new_vm.new_request(self, req, forwarding_time)
+
             else # workflow is finished
+              # calculate transmission time
+              transmission_time =
+                @configuration.communication_latency(
+                  # data center location
+                  data_center[req.data_center_id-1].location_id,
+                  # customer location
+                  @configuration.customers[req.customer_id][:location_id]
+                )
+
+              # keep track of transmission time
+              req.update_transfer_time(transmission_time)
+
               # schedule request closure
-              new_event(Event::ET_REQUEST_CLOSURE, req, e.time + req.communication_latency, nil)
+              new_event(Event::ET_REQUEST_CLOSURE, req, e.time + transmission_time, nil)
             end
 
 
@@ -192,7 +244,8 @@ module SISFC
                 reqs_longer_than[k] += 1 if ttr > k
               end
 
-              dc_stats[req.data_center_id - 1].record_request(req)
+              # collect request statistics in customer_stats
+              customer_stats[req.customer_id].record_request(req)
             end
 
 
@@ -210,23 +263,26 @@ module SISFC
            "(mean: #{stats.mean}, sd: #{stats.variance}, gt: #{reqs_longer_than.to_s})"
 
       # calculate kpis (for the moment, we only have mttr)
-      kpis = { mttr:            stats.mean,
-               ttr_sd:          stats.variance,
-               served_requests: stats.n,
-               queued_requests: requests_being_worked_on,
-               longer_than:     reqs_longer_than,
+      kpis = {
+        mttr:            stats.mean,
+        ttr_sd:          stats.variance,
+        served_requests: stats.n,
+        queued_requests: requests_being_worked_on,
+        longer_than:     reqs_longer_than,
       }
-      dc_kpis = dc_stats.each_with_index.map do |s,i|
-        { mttr:              s.mean,
+      customer_kpis = customer_stats.each_with_index.map do |s,i|
+        {
+          mttr:              s.mean,
           ttr_sd:            s.variance,
           served_requests:   s.n,
-          received_requests: reqs_arrived_at_dc[i], }
+          received_requests: reqs_received_from_customer[i],
+        }
       end
-      fitness = @evaluator.evaluate_business_impact(kpis, dc_kpis, vm_allocation)
+      fitness = @evaluator.evaluate_business_impact(kpis, customer_kpis, vm_allocation)
       puts "====== Evaluating new allocation ======\n" +
         vm_allocation.map{|x| x.except(:service_time_distribution) }.inspect + "\n" +
         "kpis: #{kpis.to_s}\n" +
-        "dc_kpis: #{dc_kpis.to_s}\n" +
+        "customer_kpis: #{customer_kpis.to_s}\n" +
         "=======================================\n"
       fitness
     end

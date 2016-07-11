@@ -22,6 +22,7 @@ data_centers \
       large:  300,
       huge:   300,
     },
+    location_id: 0,
   },
   2 => {
     maximum_vm_capacity: {
@@ -31,6 +32,7 @@ data_centers \
       large:  300,
       huge:   300,
     },
+    location_id: 1,
   },
   3 => {
     maximum_vm_capacity: {
@@ -40,6 +42,7 @@ data_centers \
       large:  300,
       huge:   300,
     },
+    location_id: 2,
   },
   4 => {
     maximum_vm_capacity: {
@@ -49,6 +52,7 @@ data_centers \
       large:  300,
       huge:   300,
     },
+    location_id: 3,
   },
   5 => {
     maximum_vm_capacity: {
@@ -58,7 +62,58 @@ data_centers \
       large:  300,
       huge:   300,
     },
+    location_id: 4,
   }
+END
+
+
+LATENCY_MODELS_CHARACTERIZATION = <<END
+latency_models \
+  [
+    # location 0
+    [
+      # remember to add nil in position 0
+      { distribution: :gaussian,
+        mu:           0.009,
+        sigma:        0.001 },
+      { distribution: :gaussian,
+        mu:           0.009,
+        sigma:        0.001 },
+      { distribution: :gaussian,
+        mu:           0.009,
+        sigma:        0.001 },
+      { distribution: :gaussian,
+        mu:           0.009,
+        sigma:        0.001 },
+      { distribution: :gaussian,
+        mu:           0.009,
+        sigma:        0.001 },
+      { distribution: :gaussian,
+        mu:           0.009,
+        sigma:        0.001 },
+      { distribution: :gaussian,
+        mu:           0.009,
+        sigma:        0.001 },
+      { distribution: :gaussian,
+        mu:           0.009,
+        sigma:        0.001 },
+    ],
+  ]
+END
+
+
+CUSTOMER_CHARACTERIZATION = <<END
+customers \
+  [
+    # first customer (id: 0) is in location with id=5 (?)
+    { location_id: 5 },
+    # second customer (id: 1) is in location with id=6 (?)
+    { location_id: 6 },
+    # third customer (id: 2) is in location with id=7 (?)
+    { location_id: 7 },
+    # fourth customer (id: 3) is in location with id=8 (?)
+    { location_id: 8 },
+  ]
 END
 
 
@@ -181,6 +236,8 @@ END
 REFERENCE_CONFIGURATION =
   SIMULATION_CHARACTERIZATION +
   DATA_CENTERS_CHARACTERIZATION +
+  LATENCY_MODELS_CHARACTERIZATION +
+  CUSTOMER_CHARACTERIZATION +
   SERVICE_COMPONENT_TYPES_CHARACTERIZATION +
   WORKFLOW_TYPES_CHARACTERIZATION +
   CONSTRAINT_CHARACTERIZATION +
@@ -199,6 +256,7 @@ DATA_CENTERS            = evaluator.data_centers
 SERVICE_COMPONENT_TYPES = evaluator.service_component_types
 WORKFLOW_TYPES          = evaluator.workflow_types
 EVALUATION              = evaluator.evaluation
+LATENCY_MODELS          = evaluator.latency_models
 
 
 def with_reference_config(opts={})
