@@ -1,0 +1,12 @@
+{
+  "*": {"make": "bundle exec rake test"},
+  "*.rb": {"path": "lib"},
+  "lib/*.rb": {
+    "type": "source",
+    "alternate": "spec/{}_spec.rb"
+  },
+  "spec/*_spec.rb": {
+    "type": "spec",
+    "alternate": "lib/{}.rb"
+  }
+}
