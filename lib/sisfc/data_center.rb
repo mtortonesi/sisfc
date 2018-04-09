@@ -2,13 +2,14 @@ module SISFC
 
   class DataCenter
 
-    attr_reader :dcid
+    attr_reader :dcid, :location_id
 
     def initialize(id, opts)
-      @dcid      = id
-      @available = opts[:maximum_vm_capacity]
-      @capacity  = @available.dup.freeze
-      @vms       = {}
+      @dcid        = id
+      @available   = opts[:maximum_vm_capacity]
+      @capacity    = @available.dup.freeze
+      @vms         = {}
+      @location_id = opts[:location_id]
     end
 
     def add_vm(vm, component_name)

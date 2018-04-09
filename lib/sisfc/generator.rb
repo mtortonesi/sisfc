@@ -39,6 +39,7 @@ module SISFC
       data_center_id   = tokens[1].to_i
       arrival_time     = tokens[2].to_f
       workflow_type_id = tokens[3].to_i
+      customer_id      = tokens[4].to_i
 
       # increase @next_rid
       @next_rid += 1
@@ -53,7 +54,8 @@ module SISFC
                   generation_time,
                   data_center_id,
                   arrival_time,
-                  workflow_type_id)
+                  workflow_type_id,
+                  customer_id)
     end
 
 

@@ -44,7 +44,7 @@ module SISFC
       stats = Statistics.new
       num_customers = @configuration.customers.size
       customer_stats = Array.new(num_customers) { Statistics.new }
-      reqs_received_from_customer = Array.new(num_customers) { Statistics.new }
+      reqs_received_from_customer = Array.new(num_customers) { 0 }
 
       # create VMs
       @vms = []
@@ -211,7 +211,7 @@ module SISFC
               transmission_time =
                 @configuration.communication_latency(
                   # data center location
-                  data_center[req.data_center_id-1].location_id,
+                  data_centers[req.data_center_id-1].location_id,
                   # customer location
                   @configuration.customers[req.customer_id][:location_id]
                 )

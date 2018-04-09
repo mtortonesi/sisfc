@@ -61,13 +61,13 @@ module SISFC
           req, service_time, arrival_time = @request_queue.shift
 
           # update the request's queuing information
-          req.update_queuing(time - arrival_time)
+          req.update_queuing_time(time - arrival_time)
 
           # the VM is busy now
           @busy = true
 
           # update the request's working information
-          req.step_completed(time, time + service_time)
+          req.step_completed(service_time)
 
           # schedule completion of workflow step
           sim.new_event(Event::ET_WORKFLOW_STEP_COMPLETED, req, time + service_time, self)

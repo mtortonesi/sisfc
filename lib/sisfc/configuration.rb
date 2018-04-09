@@ -1,5 +1,7 @@
 require 'sisfc/support/dsl_helper'
 
+require_relative './latency_manager'
+
 module SISFC
 
   module Configurable
