@@ -36,10 +36,12 @@ data.center.ids <- sample.int(num.data.centers, length(generation.times), replac
 latencies         <- rtruncnorm(length(generation.times), a=min.latency, b=Inf, mean=mu, sd=sigma)
 arrival.times     <- generation.times + latencies
 workflow.type.ids <- rep(1, length(generation.times))
+customer.ids      <- rep(0, length(generation.times))
 
 # prepare data frame and output it on the console
 df <- data.frame(Generation.Time  = generation.times,
                  Data.Center.ID   = data.center.ids,
                  Arrival.Time     = arrival.times,
-                 Workflow.Type.ID = workflow.type.ids)
+                 Workflow.Type.ID = workflow.type.ids,
+                 Customer.ID      = customer.ids)
 write.csv(df[order(df$Arrival.Time),], row.names=F)
