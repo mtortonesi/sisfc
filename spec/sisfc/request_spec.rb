@@ -10,7 +10,8 @@ describe SISFC::Request do
                            (Time.now - 1.hour).to_f,
                            rand(10),
                            Time.now.to_f,
-                           rand(4))
+                           rand(4),
+                           0) # customer_id
   end
 
 end

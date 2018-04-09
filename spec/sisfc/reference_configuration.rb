@@ -72,31 +72,135 @@ latency_models \
   [
     # location 0
     [
-      # remember to add nil in position 0
       { distribution: :gaussian,
-        mu:           0.009,
-        sigma:        0.001 },
+        mean:         0.009,
+        sd:           0.001 },
       { distribution: :gaussian,
-        mu:           0.009,
-        sigma:        0.001 },
+        mean:         0.009,
+        sd:           0.001 },
       { distribution: :gaussian,
-        mu:           0.009,
-        sigma:        0.001 },
+        mean:         0.009,
+        sd:           0.001 },
       { distribution: :gaussian,
-        mu:           0.009,
-        sigma:        0.001 },
+        mean:         0.009,
+        sd:           0.001 },
       { distribution: :gaussian,
-        mu:           0.009,
-        sigma:        0.001 },
+        mean:         0.009,
+        sd:           0.001 },
       { distribution: :gaussian,
-        mu:           0.009,
-        sigma:        0.001 },
+        mean:         0.009,
+        sd:           0.001 },
       { distribution: :gaussian,
-        mu:           0.009,
-        sigma:        0.001 },
+        mean:         0.009,
+        sd:           0.001 },
       { distribution: :gaussian,
-        mu:           0.009,
-        sigma:        0.001 },
+        mean:         0.009,
+        sd:           0.001 },
+    ],
+    # location 1
+    [
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+    ],
+    # location 2
+    [
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+    ],
+    # location 3
+    [
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+    ],
+    # location 4
+    [
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+    ],
+    # location 5
+    [
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+    ],
+    # location 6
+    [
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
+    ],
+    # location 7
+    [
+      { distribution: :gaussian,
+        mean:         0.009,
+        sd:           0.001 },
     ],
   ]
 END
@@ -124,36 +228,36 @@ service_component_types \
     allowed_vm_types: [ :medium, :large ],
     service_time_distribution: {
       medium: { distribution: :gaussian,
-                mu:           0.009, # 1 request processed every 9ms
-                sigma:        0.001 },
+                mean:         0.009, # 1 request processed every 9ms
+                sd:           0.001 },
       large:  { distribution: :gaussian,
-                mu:           0.007, # 1 request processed every 7ms
-                sigma:        0.001 } },
+                mean:         0.007, # 1 request processed every 7ms
+                sd:           0.001 } },
     estimated_workload: 50,
   },
   'App Server' => {
     allowed_vm_types: [ :medium, :large, :huge ],
     service_time_distribution: {
       medium: { distribution: :gaussian,
-                mu:           0.015, # 1 request processed every 15ms
-                sigma:        0.005 },
+                mean:         0.015, # 1 request processed every 15ms
+                sd:           0.005 },
       large:  { distribution: :gaussian,
-                mu:           0.012, # 1 request processed every 12ms
-                sigma:        0.003 },
+                mean:         0.012, # 1 request processed every 12ms
+                sd:           0.003 },
       huge:   { distribution: :gaussian,
-                mu:           0.009, # 1 request processed every 7ms
-                sigma:        0.002 } },
+                mean:         0.009, # 1 request processed every 7ms
+                sd:           0.002 } },
     estimated_workload: 70,
   },
   'Financial Transaction Server' => {
     allowed_vm_types: [ :large, :huge ],
     service_time_distribution: {
       large:  { distribution: :gaussian,
-                mu:           0.015, # 1 request processed every 15ms
-                sigma:        0.004 },
+                mean:         0.015, # 1 request processed every 15ms
+                sd:           0.004 },
       huge:   { distribution: :gaussian,
-                mu:           0.008, # 1 request processed every 8ms
-                sigma:        0.003 } },
+                mean:         0.008, # 1 request processed every 8ms
+                sd:           0.003 } },
     estimated_workload: 80,
   }
 END
