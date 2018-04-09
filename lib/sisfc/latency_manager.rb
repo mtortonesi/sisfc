@@ -6,8 +6,10 @@ module SISFC
       # here we build a (strictly upper triangular) matrix of random variables
       # that represent the communication latency models between the different
       # locations
-      @latency_models_matrix = latency_models.each do |lms_conf|
-        lms_conf.map {|rv_conf| ERV::RandomVariable.new(rv_conf) }
+      @latency_models_matrix = latency_models.map do |lms_conf|
+        lms_conf.map do |rv_conf| 
+          ERV::RandomVariable.new(rv_conf) 
+        end
       end
 
       # should we turn @latency_models_matrix from a (strictly upper)
