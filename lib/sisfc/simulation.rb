@@ -1,9 +1,10 @@
-require 'sisfc/data_center'
-require 'sisfc/event'
-require 'sisfc/generator'
-require 'sisfc/sorted_array'
-require 'sisfc/statistics'
-require 'sisfc/vm'
+require_relative './data_center'
+require_relative './event'
+require_relative './generator'
+require_relative './sorted_array'
+require_relative './statistics'
+require_relative './vm'
+require_relative './latency_manager'
 
 
 module SISFC
@@ -15,6 +16,9 @@ module SISFC
     def initialize(opts = {})
       @configuration = opts[:configuration]
       @evaluator     = opts[:evaluator]
+
+      # create latency manager
+      @latency_manager = LatencyManager.new(@configuration.latency_models)
     end
 
 
@@ -38,7 +42,11 @@ module SISFC
       @current_time = @start_time = @configuration.start_time
 
       # create data centers
-      data_centers = @configuration.data_centers.map {|k,v| DataCenter.new(k,v) }
+      data_center_repository = Hash[
+        @configuration.data_centers.map { |k,v|
+          [ k, DataCenter.new(id: k, **v) ]
+        }
+      ]
 
       # initialize statistics
       stats = Statistics.new
@@ -60,7 +68,7 @@ module SISFC
           # ... add it to the vm list ...
           @vms << vm
           # ... and register it in the corresponding data center
-          unless data_centers[opts[:dc_id]-1].add_vm(vm, opts[:component_type])
+          unless data_center_repository[opts[:dc_id]].add_vm(vm, opts[:component_type])
             puts "====== Unfeasible allocation ======"
             # here we return Float::MAX instead of, e.g., Float::INFINITY,
             # because the latter would break optimization tools. instead, we
@@ -79,8 +87,8 @@ module SISFC
 
       # generate first request
       rg = RequestGenerator.new(@configuration.request_generation)
-      new_req = rg.generate
-      new_event(Event::ET_REQUEST_ARRIVAL, new_req, new_req.arrival_time, nil)
+      req_attrs = rg.generate
+      new_event(Event::ET_REQUEST_GENERATION, req_attrs, req_attrs[:generation_time], nil)
 
       # schedule end of simulation
       unless @configuration.end_time.nil?
@@ -109,12 +117,44 @@ module SISFC
         @current_time = e.time
 
         case e.type
+          when Event::ET_REQUEST_GENERATION
+            req_attrs = e.data
+
+            # find closest data center
+            customer_location_id = @configuration.customers.dig(req_attrs[:customer_id], :location_id)
+            dc_at_customer_location = data_center_repository.values.find {|dc| dc.location_id == customer_location_id }
+
+            raise "No data center found at location id #{customer_location_id}!" unless dc_at_customer_location
+
+            # find first component name for requested workflow
+            workflow = @configuration.workflow_types[req_attrs[:workflow_type_id]]
+            first_component_name = workflow[:component_sequence][0][:name]
+
+            closest_dc = if dc_at_customer_location.has_vms_of_type?(first_component_name)
+              dc_at_customer_location
+            else
+              data_center_repository.values.select{|dc| dc.has_vms_of_type?(first_component_name) }&.sample
+            end
+
+            raise "Invalid configuration! No VMs of type #{first_component_name} found!" unless closest_dc
+
+            arrival_time = @current_time + @latency_manager.sample_latency_between(customer_location_id, closest_dc.location_id)
+            new_req = Request.new(req_attrs.merge!(initial_data_center_id: closest_dc.dcid,
+                                                   arrival_time: arrival_time))
+
+            # schedule arrival of current request
+            new_event(Event::ET_REQUEST_ARRIVAL, new_req, arrival_time, nil)
+
+            # schedule generation of next request
+            req_attrs = rg.generate
+            new_event(Event::ET_REQUEST_GENERATION, req_attrs, req_attrs[:generation_time], nil)
+
           when Event::ET_REQUEST_ARRIVAL
             # get request
             req = e.data
 
             # find data center
-            data_center = data_centers[req.data_center_id-1]
+            data_center = data_center_repository[req.data_center_id]
 
             # update reqs_received_from_customer
             reqs_received_from_customer[req.customer_id] += 1
@@ -136,10 +176,6 @@ module SISFC
               reqs_received += 1
             end
 
-            # generate next request
-            new_req = rg.generate
-            new_event(Event::ET_REQUEST_ARRIVAL, new_req, new_req.arrival_time, nil)
-
 
           # Leave these events for when we add VM migration support
           # when Event::ET_VM_SUSPEND
@@ -155,7 +191,7 @@ module SISFC
             vm.request_finished(self, e.time)
 
             # find data center and workflow
-            data_center = data_centers[req.data_center_id-1]
+            data_center = data_center_repository[req.data_center_id]
             workflow    = @configuration.workflow_types[req.workflow_type_id]
 
             # check if there are other steps left to complete the workflow
@@ -172,8 +208,8 @@ module SISFC
               # there might not be a VM of the type we need in the current data
               # center, so look in the other data centers
               unless new_vm
-                other_dcs = data_centers.collect_if {|x| x != dc }
-                other_dcs = order_dcs(other_dcs, closest_to: dc)
+                # get list of other data centers, randomly picked
+                other_dcs = data_center_repository.values.select{|x| x != data_center && x.has_vms_of_type?(next_component_name) }&.shuffle
                 other_dcs.each do |dc|
                   new_vm = dc.get_random_vm(next_component_name)
                   if new_vm
@@ -182,8 +218,8 @@ module SISFC
 
                     # keep track of transmission time
                     transmission_time =
-                      @configuration.communication_latency(data_center.location_id,
-                                                           dc.location_id)
+                      @latency_manager.sample_latency_between(data_center.location_id,
+                                                              dc.location_id)
                     req.update_transfer_time(transmission_time)
                     forwarding_time += transmission_time
 
@@ -209,12 +245,16 @@ module SISFC
             else # workflow is finished
               # calculate transmission time
               transmission_time =
-                @configuration.communication_latency(
+                @latency_manager.sample_latency_between(
                   # data center location
-                  data_centers[req.data_center_id-1].location_id,
+                  data_center_repository[req.data_center_id].location_id,
                   # customer location
                   @configuration.customers[req.customer_id][:location_id]
                 )
+
+              unless transmission_time >= 0.0
+                raise "Negative transmission time (#{transmission_time})!" 
+              end
 
               # keep track of transmission time
               req.update_transfer_time(transmission_time)
@@ -297,6 +337,10 @@ module SISFC
           Array(custom_kpis_config[:longer_than]).
             # and interval the numbers contained in that array with zeroes
             zip(zeros) ]
+      end
+
+      def communication_latency_between(loc1, loc2)
+        @latency_manager.sample_latency_between(loc1.to_i, loc2.to_i)
       end
 
   end
