@@ -2,12 +2,13 @@ module SISFC
 
   class Event
 
-    ET_REQUEST_ARRIVAL         = 0
-    ET_WORKFLOW_STEP_COMPLETED = 1
-    ET_VM_FREE                 = 2
-    ET_VM_SUSPEND              = 3
-    ET_VM_RESUME               = 4
-    ET_REQUEST_CLOSURE         = 5
+    ET_REQUEST_GENERATION      = 0
+    ET_REQUEST_ARRIVAL         = 1
+    ET_WORKFLOW_STEP_COMPLETED = 2
+    ET_VM_FREE                 = 3
+    ET_VM_SUSPEND              = 4
+    ET_VM_RESUME               = 5
+    ET_REQUEST_CLOSURE         = 6
     ET_END_OF_SIMULATION       = 100
 
     # let the comparable mixin provide the < and > operators for us
