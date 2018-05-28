@@ -1,21 +1,17 @@
-require 'csv'
-require 'sisfc/request'
-
-
 module SISFC
 
   class RequestGenerator
 
-    def initialize(opts)
+    def initialize(opts={})
       if opts.has_key? :filename
         filename = opts[:filename]
-        raise "File #{filename} does not exist!" unless File.exists?(filename)
+        raise ArgumentError, "File #{filename} does not exist!" unless File.exists?(filename)
         @file = File.open(filename, mode='r')
       elsif opts.has_key? :command
         command = opts[:command]
         @file = IO.popen(command)
       else
-        raise ArgumentError, 'Need to provide either a filename or a command!'
+        raise ArgumentError, "Need to provide either a filename or a command!"
       end
 
       # throw away the first line (containing the CSV headers)
@@ -34,28 +30,21 @@ module SISFC
       raise "End of input reached while reading request #{@next_rid}!" unless line
 
       # parse data
-      tokens = line.parse_csv
+      tokens = line.split(",") # should be faster than CSV parsing
       generation_time  = tokens[0].to_f
-      data_center_id   = tokens[1].to_i
-      arrival_time     = tokens[2].to_f
-      workflow_type_id = tokens[3].to_i
-      customer_id      = tokens[4].to_i
+      workflow_type_id = tokens[1].to_i
+      customer_id      = tokens[2].to_i - 1
 
       # increase @next_rid
       @next_rid += 1
 
-      # sanity check
-      if generation_time > arrival_time
-        raise "Generation time (#{generation_time}) is larger than arrival time (#{arrival_time})!"
-      end
-
-      # generate and return request
-      Request.new(@next_rid,
-                  generation_time,
-                  data_center_id,
-                  arrival_time,
-                  workflow_type_id,
-                  customer_id)
+      # return request
+      {
+        rid: @next_rid,
+        generation_time: generation_time,
+        workflow_type_id: workflow_type_id,
+        customer_id: customer_id,
+      }
     end
 
 
