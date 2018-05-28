@@ -1,6 +1,16 @@
 require 'sisfc/support/dsl_helper'
 
-require_relative './latency_manager'
+
+module ERV
+  module GaussianMixtureHelper
+    def self.RawParametersToMixtureArgs(*args)
+      raise ArgumentError, "Arguments must be a multiple of 3!" if (args.count % 3) != 0
+      args.each_slice(3).map do |(a,b,c)|
+        { distribution: :gaussian, weight: a * c, args: { mean: b, sd: c } }
+      end
+    end
+  end
+end
 
 module SISFC
 
@@ -21,6 +31,7 @@ module SISFC
 
   class Configuration
     include Configurable
+    include ERV::GaussianMixtureHelper
 
     attr_accessor :filename
 
@@ -41,18 +52,11 @@ module SISFC
       # initialize kpi_customization to empty hash if needed
       @kpi_customization ||= {}
 
-      # create latency manager
-      @latency_manager = LatencyManager.new(@latency_models)
-
       # TODO: might want to restrict this substitution only to the :filename
       # and :command keys
       @request_generation.each do |k,v|
         v.gsub!('<pwd>', File.expand_path(File.dirname(@filename)))
       end
-    end
-
-    def communication_latency(loc1, loc2)
-      @latency_manager.sample_latency_between(loc1.to_i, loc2.to_i)
     end
 
     def self.load_from_file(filename)
