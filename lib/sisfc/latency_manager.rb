@@ -8,6 +8,7 @@ module SISFC
       # locations
       @latency_models_matrix = latency_models.map do |lms_conf|
         lms_conf.map do |rv_conf| 
+          rv_conf
           ERV::RandomVariable.new(rv_conf) 
         end
       end
@@ -21,23 +22,35 @@ module SISFC
       @average_latency_matrix = @latency_models_matrix.map do |lms|
         lms.map{|x| x.mean }
       end
+
+      # latency in the same location is implemented as a truncated gaussian
+      # with mean = 20ms, sd = 5ms, and a = 2ms
+      @same_location_latency = ERV::RandomVariable.new(distribution: :gaussian, args: { mean: 20E-3, sd: 5E-3 })
     end
 
     def sample_latency_between(loc1, loc2)
       if loc1 == loc2
-        0.0 # this case should never happen, but you never know
+        # rejection sampling to implement (crudely) PDF truncation
+        while (lat = @same_location_latency.next) < 2E-3; end
+        lat
       else
         l1, l2 = loc1 < loc2 ? [ loc1, loc2 ] : [ loc2, loc1 ]
 
         # since we use a compact representation for @latency_models_matrix, the
         # indexes become l1 and (l2-l1-1)
-        @latency_models_matrix[l1][l2-l1-1].next
+        # rejection sampling to implement (crudely) PDF truncation to positive numbers
+        while (lat = @latency_models_matrix[l1][l2-l1-1].next) <= 0.0; end
+        lat
       end
     end
 
     def average_latency_between(loc1, loc2)
+      # the results returned by this method are not entirely accurate, because
+      # rejection sampling changes the shape of the PDF. see, e.g.,
+      # https://stackoverflow.com/questions/47933019/how-to-properly-sample-truncated-distributions
+      # still, it is an acceptable approximation
       if loc1 == loc2
-        0.0 # this case should never happen, but you never know
+        @same_location_latency.mean
       else
         l1, l2 = loc1 < loc2 ? [ loc1, loc2 ] : [ loc2, loc1 ]
 
