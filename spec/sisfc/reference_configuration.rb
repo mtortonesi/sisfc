@@ -72,135 +72,279 @@ latency_models \
   [
     # location 0
     [
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
     ],
     # location 1
     [
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
     ],
     # location 2
     [
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
     ],
     # location 3
     [
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
     ],
     # location 4
     [
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
     ],
     # location 5
     [
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
     ],
     # location 6
     [
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
     ],
     # location 7
     [
-      { distribution: :gaussian,
-        mean:         0.009,
-        sd:           0.001 },
+      {
+        distribution: :gaussian,
+        args: {
+          mean: 0.009,
+          sd:   0.001,
+        },
+      },
     ],
   ]
 END
