@@ -21,7 +21,7 @@ def do_abort(message)
 end
 
 
-if __FILE__ == $0
+if File.expand_path(__FILE__) == File.expand_path($0)
   # make sure both required arguments were given
   case ARGV.size
   when 1 then
