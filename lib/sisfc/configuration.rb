@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'sisfc/support/dsl_helper'
 
 

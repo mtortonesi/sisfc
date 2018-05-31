@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # taken from Jim Freeze's excellent article "Creating DSLs with Ruby"
 # http://www.artima.com/rubycs/articles/ruby_as_dsl.html
 

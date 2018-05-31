@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative './data_center'
 require_relative './event'
 require_relative './generator'

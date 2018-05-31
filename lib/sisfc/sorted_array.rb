@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module SISFC
   # the SortedArray class was taken from the ruby cookbook
   class SortedArray < Array
