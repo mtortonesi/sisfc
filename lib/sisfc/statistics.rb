@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-require 'sisfc/request'
+require_relative './request'
+
 
 module SISFC
   class Statistics

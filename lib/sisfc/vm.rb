@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'sisfc/event'
+require_relative './event'
 require 'erv'
 
 
