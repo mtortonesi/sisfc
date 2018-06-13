@@ -35,7 +35,7 @@ module SISFC
       tokens = line.split(",") # should be faster than CSV parsing
       generation_time  = tokens[0].to_f
       workflow_type_id = tokens[1].to_i
-      customer_id      = tokens[2].to_i - 1
+      customer_id      = tokens[2].to_i
 
       # increase @next_rid
       @next_rid += 1
