@@ -11,11 +11,14 @@ module SISFC
 
     attr_reader :dcid, :location_id
 
-    def initialize(id:, location_id:, **opts)
+    def initialize(id:, location_id:, name:, type:, **opts)
       @dcid          = id
       @location_id   = location_id
       @vms           = {}
       @vm_type_count = {}
+      @name          = name
+      @type          = type
+      raise ArgumentError, "Unsupported type!" unless [ :private, :public ].include?(@type)
       @availability_check_proc = opts[:maximum_vm_capacity]
     end
 
@@ -54,6 +57,14 @@ module SISFC
     def to_s
       "Data center #{@dcid}, with VMs:" +
         @vms.inject("") {|s,(k,v)| s += " (#{k}: #{v.size})" }
+    end
+
+    def private?
+      @type == :private
+    end
+
+    def public?
+      @type == :public
     end
 
   end
