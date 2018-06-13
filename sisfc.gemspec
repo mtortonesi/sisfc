@@ -18,7 +18,7 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'activesupport', '~> 4.2.1'
+  spec.add_dependency 'as-duration', '~> 0.1.0'
   spec.add_dependency 'erv', '>= 0.3.5'
   spec.add_dependency 'ice_nine', '~> 0.11.2'
 

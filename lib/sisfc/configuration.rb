@@ -4,6 +4,7 @@ require_relative './support/dsl_helper'
 
 require_relative './logger'
 
+require 'as-duration'
 require 'ice_nine'
 require 'ice_nine/core_ext/object'
 
