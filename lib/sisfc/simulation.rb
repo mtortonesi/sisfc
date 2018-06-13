@@ -43,18 +43,28 @@ module SISFC
       # setup simulation start and current time
       @current_time = @start_time = @configuration.start_time
 
-      # create data centers
+      # create data centers and store them in a repository
       data_center_repository = Hash[
-        @configuration.data_centers.map { |k,v|
+        @configuration.data_centers.map do |k,v|
           [ k, DataCenter.new(id: k, **v) ]
-        }
+        end
       ]
+
+      customer_repository = @configuration.customers
+      workflow_type_repository = @configuration.workflow_types
 
       # initialize statistics
       stats = Statistics.new
-      num_customers = @configuration.customers.size
-      customer_stats = Array.new(num_customers) { Statistics.new }
-      reqs_received_from_customer = Array.new(num_customers) { 0 }
+      per_workflow_and_customer_stats = Hash[
+        workflow_type_repository.keys.map do |wf_id|
+          [ wf_id, Hash[customer_repository.keys.map {|c_id| [ c_id, Statistics.new ]}] ]
+        end
+      ]
+      reqs_received_per_workflow_and_customer = Hash[
+        workflow_type_repository.keys.map do |wf_id|
+          [ wf_id, Hash[customer_repository.keys.map {|c_id| [ c_id, 0 ]}] ]
+        end
+      ]
 
       # create VMs
       @vms = []
@@ -71,7 +81,7 @@ module SISFC
           @vms << vm
           # ... and register it in the corresponding data center
           unless data_center_repository[opts[:dc_id]].add_vm(vm, opts[:component_type])
-            puts "====== Unfeasible allocation ======"
+            $stderr.puts "====== Unfeasible allocation at data center #{dc_id} ======"
             # here we return Float::MAX instead of, e.g., Float::INFINITY,
             # because the latter would break optimization tools. instead, we
             # want to have a very high but comparable value.
@@ -103,16 +113,16 @@ module SISFC
 
       requests_being_worked_on = 0
       requests_forwarded_to_other_dcs = 0
-      events = 0
+      current_event = 0
 
       # launch simulation
       until @event_queue.empty?
         e = @event_queue.shift
 
-        events += 1
+        current_event += 1
         # sanity check on simulation time flow
         if @current_time > e.time
-          raise "Error: simulation time inconsistency for event #{events} " +
+          raise "Error: simulation time inconsistency for event #{current_event} " +
                 "e.type=#{e.type} @current_time=#{@current_time}, e.time=#{e.time}"
         end
 
@@ -123,13 +133,13 @@ module SISFC
             req_attrs = e.data
 
             # find closest data center
-            customer_location_id = @configuration.customers.dig(req_attrs[:customer_id], :location_id)
+            customer_location_id = customer_repository.dig(req_attrs[:customer_id], :location_id)
             dc_at_customer_location = data_center_repository.values.find {|dc| dc.location_id == customer_location_id }
 
             raise "No data center found at location id #{customer_location_id}!" unless dc_at_customer_location
 
             # find first component name for requested workflow
-            workflow = @configuration.workflow_types[req_attrs[:workflow_type_id]]
+            workflow = workflow_type_repository[req_attrs[:workflow_type_id]]
             first_component_name = workflow[:component_sequence][0][:name]
 
             closest_dc = if dc_at_customer_location.has_vms_of_type?(first_component_name)
@@ -158,11 +168,11 @@ module SISFC
             # find data center
             data_center = data_center_repository[req.data_center_id]
 
-            # update reqs_received_from_customer
-            reqs_received_from_customer[req.customer_id] += 1
+            # update reqs_received_per_workflow_and_customer
+            reqs_received_per_workflow_and_customer[req.workflow_type_id][req.customer_id] += 1
 
             # find next component name
-            workflow = @configuration.workflow_types[req.workflow_type_id]
+            workflow = workflow_type_repository[req.workflow_type_id]
             next_component_name = workflow[:component_sequence][req.next_step][:name]
 
             # get random vm providing next service component type
@@ -194,7 +204,7 @@ module SISFC
 
             # find data center and workflow
             data_center = data_center_repository[req.data_center_id]
-            workflow    = @configuration.workflow_types[req.workflow_type_id]
+            workflow    = workflow_type_repository[req.workflow_type_id]
 
             # check if there are other steps left to complete the workflow
             if req.next_step < workflow[:component_sequence].size
@@ -251,11 +261,11 @@ module SISFC
                   # data center location
                   data_center_repository[req.data_center_id].location_id,
                   # customer location
-                  @configuration.customers[req.customer_id][:location_id]
+                  customer_repository.dig(req.customer_id, :location_id)
                 )
 
               unless transmission_time >= 0.0
-                raise "Negative transmission time (#{transmission_time})!" 
+                raise "Negative transmission time (#{transmission_time})!"
               end
 
               # keep track of transmission time
@@ -286,8 +296,8 @@ module SISFC
                 reqs_longer_than[k] += 1 if ttr > k
               end
 
-              # collect request statistics in customer_stats
-              customer_stats[req.customer_id].record_request(req)
+              # collect request statistics in per_workflow_and_customer_stats
+              per_workflow_and_customer_stats[req.workflow_type_id][req.customer_id].record_request(req)
             end
 
 
@@ -304,7 +314,7 @@ module SISFC
       puts "received: #{reqs_received}, closed: #{stats.n}, " +
            "(mean: #{stats.mean}, sd: #{stats.variance}, gt: #{reqs_longer_than.to_s})"
 
-      # calculate kpis (for the moment, we only have mttr)
+      # calculate kpis
       kpis = {
         mttr:            stats.mean,
         ttr_sd:          stats.variance,
@@ -312,19 +322,31 @@ module SISFC
         queued_requests: requests_being_worked_on,
         longer_than:     reqs_longer_than,
       }
-      customer_kpis = customer_stats.each_with_index.map do |s,i|
-        {
-          mttr:              s.mean,
-          ttr_sd:            s.variance,
-          served_requests:   s.n,
-          received_requests: reqs_received_from_customer[i],
-        }
-      end
-      fitness = @evaluator.evaluate_business_impact(kpis, customer_kpis, vm_allocation)
+      per_workflow_and_customer_kpis = Hash[
+        per_workflow_and_customer_stats.map do |wf_id, wf_stats|
+          [ wf_id,
+            Hash[
+              wf_stats.map do |c_id, c_stats|
+                [
+                  c_id,
+                  {
+                    mttr:              c_stats.mean,
+                    ttr_sd:            c_stats.variance,
+                    served_requests:   c_stats.n,
+                    received_requests: reqs_received_per_workflow_and_customer[wf_id][c_id],
+                  }
+                ]
+              end
+            ]
+          ]
+        end
+      ]
+      fitness = @evaluator.evaluate_business_impact(kpis, per_workflow_and_customer_kpis,
+                                                    vm_allocation, data_center_repository)
       puts "====== Evaluating new allocation ======\n" +
         vm_allocation.map{|x| x.except(:service_time_distribution) }.inspect + "\n" +
         "kpis: #{kpis.to_s}\n" +
-        "customer_kpis: #{customer_kpis.to_s}\n" +
+        "customer_kpis: #{per_workflow_and_customer_kpis.to_s}\n" +
         "=======================================\n"
       fitness
     end
