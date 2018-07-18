@@ -1,17 +1,25 @@
 # frozen_string_literal: true
 
 require_relative './event'
+require_relative './logger'
 require 'erv'
 
+class RequestInfo < Struct.new(:request, :service_time, :arrival_time)
+  include Comparable
+  def <=> (o)
+    arrival_time <=> o.arrival_time
+  end
+end
 
 module SISFC
 
   class VM
+    include Logging
 
     # setup readable/accessible attributes
     attr_reader :vmid, :dc_id, :size
 
-    def initialize(vmid, dc_id, size, service_time_distribution)
+    def initialize(vmid, dc_id, size, service_time_distribution, opts={})
       @vmid             = vmid
       @dcid             = dc_id
       @size             = size
@@ -21,21 +29,25 @@ module SISFC
       @busy          = false
       @request_queue = []
 
+      @trace = opts[:trace] ? true : false
+      @notes = opts[:notes]
+
       # @request_queue_info          = []
       # @request_currently_servicing = nil
     end
 
     def new_request(sim, r, time)
-      # put the (request, service time, arrival time) tuple at the end of the queue
-      @request_queue << [ r, @service_times_rv.next, time ]
+      # put request w/ metadata at the end of the queue
+      @request_queue << RequestInfo.new(r, @service_times_rv.next, time)
 
       # update queue size tracking information
       # @request_queue_info << { size: @request_queue.size, time: time }
-
-      unless @busy
-        # try to allocate operator
-        try_servicing_new_request(sim, time)
+      if @trace and @request_queue.size % 100 == 0
+        logger.info "VM #{@vmid} with #{@notes} has #{@request_queue.size} requests in queue at time #{time} and is " +
+           (@busy ? "busy" : "not busy")
       end
+
+      try_servicing_new_request(sim, time) unless @busy
     end
 
     def request_finished(sim, time)
@@ -59,20 +71,24 @@ module SISFC
         raise "Busy VM (vmid: #{@vmid})!" if @busy
 
         unless @request_queue.empty?
+
           # pick request and metadata from the incoming request queue
-          req, service_time, arrival_time = @request_queue.shift
+          ri = @request_queue.shift
+
+          if @trace
+            logger.info "VM #{@vmid} with #{@notes} fulfilling a new request at time #{time} for #{ri.service_time} seconds"
+          end
+
+          req = ri.request
 
           # update the request's queuing information
-          req.update_queuing_time(time - arrival_time)
-
-          # the VM is busy now
-          @busy = true
+          req.update_queuing_time(time - ri.arrival_time)
 
           # update the request's working information
-          req.step_completed(service_time)
+          req.step_completed(ri.service_time)
 
           # schedule completion of workflow step
-          sim.new_event(Event::ET_WORKFLOW_STEP_COMPLETED, req, time + service_time, self)
+          sim.new_event(Event::ET_WORKFLOW_STEP_COMPLETED, req, time + ri.service_time, self)
         end
       end
 
