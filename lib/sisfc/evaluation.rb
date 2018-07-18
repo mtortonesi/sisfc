@@ -17,7 +17,7 @@ module SISFC
     end
 
     def evaluate_business_impact(all_kpis, per_workflow_and_customer_kpis,
-                                 vm_allocation, data_center_repository)
+                                 vm_allocation)
       # evaluate variable hourly costs related to VM allocation
       cost = vm_allocation.inject(0.0) do |s,x|
         hc = @vm_hourly_cost.find{|i| i[:data_center] == x[:dc_id] and i[:vm_type] == x[:vm_size] }

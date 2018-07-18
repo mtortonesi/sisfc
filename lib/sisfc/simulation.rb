@@ -328,7 +328,7 @@ module SISFC
       # puts "========== Simulation Finished =========="
 
       costs = @evaluator.evaluate_business_impact(stats, per_workflow_and_customer_stats,
-                                                  vm_allocation, data_center_repository)
+                                                  vm_allocation)
       puts "====== Evaluating new allocation ======\n" +
            "costs: #{costs}\n" +
            "vm_allocation: #{vm_allocation.inspect}\n" +
