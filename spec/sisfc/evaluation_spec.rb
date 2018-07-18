@@ -6,7 +6,7 @@ require_relative './reference_configuration'
 
 
 describe SISFC::Evaluator do
-  describe '.penalties' do
+  context '.penalties' do
     EXAMPLE_ALLOCATION = [
       { dc_id: 1, vm_size: :medium, vm_num: 20 },
       { dc_id: 1, vm_size:  :large, vm_num: 30 },

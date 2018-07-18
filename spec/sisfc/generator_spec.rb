@@ -33,7 +33,7 @@ describe SISFC::RequestGenerator do
         r[:rid].must_equal 1
         r[:generation_time].must_equal GENERATION_TIMES[0]
         r[:workflow_type_id].must_equal WORKFLOW_TYPE_IDS[0]
-        r[:customer_id].must_equal (CUSTOMER_IDS[0] - 1)
+        r[:customer_id].must_equal CUSTOMER_IDS[0]
       end
 
     ensure
@@ -55,7 +55,7 @@ describe SISFC::RequestGenerator do
         r[:rid].must_equal 1
         r[:generation_time].must_equal GENERATION_TIMES[0]
         r[:workflow_type_id].must_equal WORKFLOW_TYPE_IDS[0]
-        r[:customer_id].must_equal (CUSTOMER_IDS[0] - 1)
+        r[:customer_id].must_equal CUSTOMER_IDS[0]
       end
     ensure
       # delete temporary file
