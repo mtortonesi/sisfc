@@ -6,7 +6,6 @@ require_relative './logger'
 
 require 'as-duration'
 require 'ice_nine'
-require 'ice_nine/core_ext/object'
 
 module ERV
   module GaussianMixtureHelper
@@ -19,11 +18,36 @@ module ERV
   end
 end
 
+if defined? JRUBY_VERSION
+  # JRuby 9.2 still has a buggy support for refinements, so we need to revert
+  # to the brutal monkeypatching of the Integer class
+  class Integer
+    # def minute; self * 60; end
+    # def minutes; self * 60; end
+    # def second; self; end
+    # def seconds; self; end
+    def msec; self * 1E-3; end
+    def msecs; self * 1E-3; end
+  end
+else
+  module TimeExtensions
+    refine Integer do
+      # def minute; self * 60; end
+      # def minutes; self * 60; end
+      # def second; self; end
+      # def seconds; self; end
+      def msec; self * 1E-3; end
+      def msecs; self * 1E-3; end
+    end
+  end
+end
+
 module SISFC
 
   module Configurable
     dsl_accessor :constraints,
                  :customers,
+                 :custom_stats,
                  :data_centers,
                  :duration,
                  :evaluation,
@@ -39,6 +63,7 @@ module SISFC
   class Configuration
     include Configurable
     include Logging
+    using TimeExtensions unless defined? JRUBY_VERSION
 
     attr_accessor :filename
 
@@ -62,22 +87,23 @@ module SISFC
       # TODO: might want to restrict this substitution only to the :filename
       # and :command keys
       @request_generation.each do |k,v|
-        v.gsub!('<pwd>', File.expand_path(File.dirname(@filename)))
+        v = v.gsub('<pwd>', File.expand_path(File.dirname(@filename)))
       end
 
       # freeze everything!
-      @constraints.deep_freeze
-      @customers.deep_freeze
-      @data_centers.deep_freeze
-      @duration.deep_freeze
-      @evaluation.deep_freeze
-      @kpi_customization.deep_freeze
-      @latency_models.deep_freeze
-      @request_generation.deep_freeze
-      @service_component_types.deep_freeze
-      @start_time.deep_freeze
-      @warmup_duration.deep_freeze
-      @workflow_types.deep_freeze
+      IceNine.deep_freeze(@constraints)
+      IceNine.deep_freeze(@customers)
+      IceNine.deep_freeze(@custom_stats)
+      IceNine.deep_freeze(@data_centers)
+      IceNine.deep_freeze(@duration)
+      IceNine.deep_freeze(@evaluation)
+      IceNine.deep_freeze(@kpi_customization)
+      IceNine.deep_freeze(@latency_models)
+      IceNine.deep_freeze(@request_generation)
+      IceNine.deep_freeze(@service_component_types)
+      IceNine.deep_freeze(@start_time)
+      IceNine.deep_freeze(@warmup_duration)
+      IceNine.deep_freeze(@workflow_types)
     end
 
     def self.load_from_file(filename)
