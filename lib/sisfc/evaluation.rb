@@ -11,7 +11,7 @@ module SISFC
       @vm_hourly_cost = conf.evaluation[:vm_hourly_cost]
       raise ArgumentError, 'No VM hourly costs provided!' unless @vm_hourly_cost
 
-      @fixed_hourly_cost = conf.evaluation[:fixed_hourly_cost]
+      @fixed_hourly_cost = conf.evaluation[:fixed_hourly_cost] || {}
 
       @penalties_func = conf.evaluation[:penalties]
     end
