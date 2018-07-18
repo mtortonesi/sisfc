@@ -6,11 +6,11 @@ module SISFC
 
     ET_REQUEST_GENERATION      = 0
     ET_REQUEST_ARRIVAL         = 1
-    ET_WORKFLOW_STEP_COMPLETED = 2
-    ET_VM_FREE                 = 3
-    ET_VM_SUSPEND              = 4
-    ET_VM_RESUME               = 5
-    ET_REQUEST_CLOSURE         = 6
+    ET_REQUEST_FORWARDING      = 2
+    ET_WORKFLOW_STEP_COMPLETED = 3
+    ET_REQUEST_CLOSURE         = 4
+    # ET_VM_SUSPEND              = 5
+    # ET_VM_RESUME               = 6
     ET_END_OF_SIMULATION       = 100
 
     # let the comparable mixin provide the < and > operators for us
