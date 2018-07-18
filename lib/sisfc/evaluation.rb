@@ -11,33 +11,33 @@ module SISFC
       @vm_hourly_cost = conf.evaluation[:vm_hourly_cost]
       raise ArgumentError, 'No VM hourly costs provided!' unless @vm_hourly_cost
 
+      @fixed_hourly_cost = conf.evaluation[:fixed_hourly_cost]
+
       @penalties_func = conf.evaluation[:penalties]
     end
 
     def evaluate_business_impact(all_kpis, per_workflow_and_customer_kpis,
                                  vm_allocation, data_center_repository)
-      # evaluate VM daily costs
+      # evaluate variable hourly costs related to VM allocation
       cost = vm_allocation.inject(0.0) do |s,x|
         hc = @vm_hourly_cost.find{|i| i[:data_center] == x[:dc_id] and i[:vm_type] == x[:vm_size] }
-        if hc
-          s += x[:vm_num] * hc[:cost]
-        else
-          logger.warn("Cannot find hourly cost for data center #{x[:dc_id]} and VM size #{x[:vm_size]}!")
-          s
-        end
+        raise "Cannot find hourly cost for data center #{x[:dc_id]} and VM size #{x[:vm_size]}!" unless hc
+        s += x[:vm_num] * hc[:cost]
       end
+
+      # evaluate fixed hourly costs (for private Cloud data centers)
+      @fixed_hourly_cost.values.each do |fixed_cost|
+        cost += fixed_cost
+      end
+
+      # calculate daily cost
       cost *= 24.0
-      all_kpis[:cost] = cost
-      # puts "vm allocation cost: #{cost}"
 
-      # consider SLO violations
+      # consider SLO violation penalties
       penalties = (@penalties_func.nil? ? 0.0 : (@penalties_func.call(all_kpis, per_workflow_and_customer_kpis) or 0.0))
-      all_kpis[:penalties] = penalties
-      # puts "slo penalties cost: #{penalties}"
-      cost += penalties
 
-      # we want to minimize the cost, so we define fitness as -cost
-      fitness = -cost
+      { it_cost:   cost,
+        penalties: penalties }
     end
   end
 end

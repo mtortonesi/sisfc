@@ -36,10 +36,6 @@ module SISFC
 
 
     def evaluate_allocation(vm_allocation)
-      # initialize request counters
-      reqs_received = 0
-      reqs_longer_than = init_counters_for_longer_than_stats(@configuration.kpi_customization)
-
       # setup simulation start and current time
       @current_time = @start_time = @configuration.start_time
 
@@ -56,13 +52,20 @@ module SISFC
       # initialize statistics
       stats = Statistics.new
       per_workflow_and_customer_stats = Hash[
-        workflow_type_repository.keys.map do |wf_id|
-          [ wf_id, Hash[customer_repository.keys.map {|c_id| [ c_id, Statistics.new ]}] ]
+        workflow_type_repository.keys.map do |wft_id|
+          [
+            wft_id,
+            Hash[
+              customer_repository.keys.map do |c_id|
+                [ c_id, Statistics.new(@configuration.custom_stats.find{|x| x[:customer_id] == c_id && x[:workflow_type_id] == wft_id } || {}) ]
+              end
+            ]
+          ]
         end
       ]
       reqs_received_per_workflow_and_customer = Hash[
-        workflow_type_repository.keys.map do |wf_id|
-          [ wf_id, Hash[customer_repository.keys.map {|c_id| [ c_id, 0 ]}] ]
+        workflow_type_repository.keys.map do |wft_id|
+          [ wft_id, Hash[customer_repository.keys.map {|c_id| [ c_id, 0 ]}] ]
         end
       ]
 
@@ -71,17 +74,18 @@ module SISFC
       vmid = 0
       vm_allocation.each do |opts|
         # setup service_time_distribution
-        opts[:service_time_distribution] = @configuration.service_component_types[opts[:component_type]][:service_time_distribution]
+        stdist = @configuration.service_component_types[opts[:component_type]][:service_time_distribution]
 
         # allocate the VMs
         opts[:vm_num].times do
           # create VM ...
-          vm = VM.new(vmid, opts[:dc_id], opts[:vm_size], opts[:service_time_distribution])
+          vm = VM.new(vmid, opts[:dc_id], opts[:vm_size], stdist)
           # ... add it to the vm list ...
           @vms << vm
           # ... and register it in the corresponding data center
           unless data_center_repository[opts[:dc_id]].add_vm(vm, opts[:component_type])
             $stderr.puts "====== Unfeasible allocation at data center #{dc_id} ======"
+            $stderr.flush
             # here we return Float::MAX instead of, e.g., Float::INFINITY,
             # because the latter would break optimization tools. instead, we
             # want to have a very high but comparable value.
@@ -178,20 +182,33 @@ module SISFC
             # get random vm providing next service component type
             vm = data_center.get_random_vm(next_component_name)
 
-            # forward request to the vm
-            vm.new_request(self, req, e.time)
+            # schedule request forwarding to vm
+            new_event(Event::ET_REQUEST_FORWARDING, req, e.time, vm)
 
             # update stats
             if req.arrival_time > warmup_threshold
               # increase the number of requests being worked on
               requests_being_worked_on += 1
-              reqs_received += 1
+
+              # increase count of received requests
+              stats.request_received
+
+              # increase count of received requests in per_workflow_and_customer_stats
+              per_workflow_and_customer_stats[req.workflow_type_id][req.customer_id].request_received
             end
 
 
           # Leave these events for when we add VM migration support
           # when Event::ET_VM_SUSPEND
           # when Event::ET_VM_RESUME
+
+          when Event::ET_REQUEST_FORWARDING
+            # get request
+            req  = e.data
+            time = e.time
+            vm   = e.destination
+
+            vm.new_request(self, req, time)
 
 
           when Event::ET_WORKFLOW_STEP_COMPLETED
@@ -232,6 +249,11 @@ module SISFC
                     transmission_time =
                       @latency_manager.sample_latency_between(data_center.location_id,
                                                               dc.location_id)
+
+                    unless transmission_time >= 0.0
+                      raise "Negative transmission time (#{transmission_time})!"
+                    end
+
                     req.update_transfer_time(transmission_time)
                     forwarding_time += transmission_time
 
@@ -251,8 +273,8 @@ module SISFC
               raise "Cannot find VM running a component of type " +
                     "#{next_component_name} in any data center!" unless new_vm
 
-              # forward request to the new VM
-              new_vm.new_request(self, req, forwarding_time)
+              # schedule request forwarding to vm
+              new_event(Event::ET_REQUEST_FORWARDING, req, forwarding_time, new_vm)
 
             else # workflow is finished
               # calculate transmission time
@@ -290,11 +312,6 @@ module SISFC
 
               # collect request statistics
               stats.record_request(req)
-              ttr = req.ttr
-              raise "TTR for request #{req.rid} is nil!" if ttr.nil?
-              reqs_longer_than.each_key do |k|
-                reqs_longer_than[k] += 1 if ttr > k
-              end
 
               # collect request statistics in per_workflow_and_customer_stats
               per_workflow_and_customer_stats[req.workflow_type_id][req.customer_id].record_request(req)
@@ -310,59 +327,21 @@ module SISFC
 
       # puts "========== Simulation Finished =========="
 
-      # poor man's statistics summary¬
-      puts "received: #{reqs_received}, closed: #{stats.n}, " +
-           "(mean: #{stats.mean}, sd: #{stats.variance}, gt: #{reqs_longer_than.to_s})"
-
-      # calculate kpis
-      kpis = {
-        mttr:            stats.mean,
-        ttr_sd:          stats.variance,
-        served_requests: stats.n,
-        queued_requests: requests_being_worked_on,
-        longer_than:     reqs_longer_than,
-      }
-      per_workflow_and_customer_kpis = Hash[
-        per_workflow_and_customer_stats.map do |wf_id, wf_stats|
-          [ wf_id,
-            Hash[
-              wf_stats.map do |c_id, c_stats|
-                [
-                  c_id,
-                  {
-                    mttr:              c_stats.mean,
-                    ttr_sd:            c_stats.variance,
-                    served_requests:   c_stats.n,
-                    received_requests: reqs_received_per_workflow_and_customer[wf_id][c_id],
-                  }
-                ]
-              end
-            ]
-          ]
-        end
-      ]
-      fitness = @evaluator.evaluate_business_impact(kpis, per_workflow_and_customer_kpis,
-                                                    vm_allocation, data_center_repository)
+      costs = @evaluator.evaluate_business_impact(stats, per_workflow_and_customer_stats,
+                                                  vm_allocation, data_center_repository)
       puts "====== Evaluating new allocation ======\n" +
-        vm_allocation.map{|x| x.dup.delete(:service_time_distribution) }.inspect + "\n" +
-        "kpis: #{kpis.to_s}\n" +
-        "customer_kpis: #{per_workflow_and_customer_kpis.to_s}\n" +
-        "=======================================\n"
-      fitness
+           "costs: #{costs}\n" +
+           "vm_allocation: #{vm_allocation.inspect}\n" +
+           "stats: #{stats.to_s}\n" +
+           "per_workflow_and_customer_stats: #{per_workflow_and_customer_stats.to_s}\n" +
+           "=======================================\n"
+
+      # we want to minimize the cost, so we define fitness as the opposite of
+      # the sum of all costs incurred
+      fitness = - costs.values.inject(0.0){|s,x| s += x }
     end
 
     private
-      def init_counters_for_longer_than_stats(custom_kpis_config)
-        # prepare an infinite length enumerator that always returns zero
-        zeros = Enumerator.new(){|x| loop do x << 0 end }
-
-        Hash[
-          # wrap the values in custom_kpis_config[:longer_than] in an array
-          Array(custom_kpis_config[:longer_than]).
-            # and interval the numbers contained in that array with zeroes
-            zip(zeros) ]
-      end
-
       def communication_latency_between(loc1, loc2)
         @latency_manager.sample_latency_between(loc1.to_i, loc2.to_i)
       end
