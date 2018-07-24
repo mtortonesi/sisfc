@@ -4,6 +4,7 @@
 *.swp
 .bundle
 .config
+.env
 .ruby-version
 coverage
 Gemfile.lock
