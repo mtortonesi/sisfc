@@ -1,5 +1,9 @@
 # A Simulator for IT Service in Federated Clouds (SISFC)
 
+[![Gem Version](https://badge.fury.io/rb/sisfc.svg)](https://badge.fury.io/rb/sisfc)
+[![Build Status](https://travis-ci.org/mtortonesi/sisfc.png?branch=master)](https://travis-ci.org/mtortonesi/sisfc)
+[![Code Climate](https://codeclimate.com/github/mtortonesi/ruby.png)](https://codeclimate.com/github/mtortonesi/sisfc)
+
 SISFC is a simulator designed to reenact the behaviour of IT services in
 federated Cloud environments.
 
