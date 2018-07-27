@@ -87,7 +87,7 @@ module SISFC
       # TODO: might want to restrict this substitution only to the :filename
       # and :command keys
       @request_generation.each do |k,v|
-        v = v.gsub('<pwd>', File.expand_path(File.dirname(@filename)))
+        @request_generation[k] = v.gsub('<pwd>', File.expand_path(File.dirname(@filename)))
       end
 
       # freeze everything!
