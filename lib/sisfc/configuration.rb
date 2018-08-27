@@ -90,10 +90,12 @@ module SISFC
         @request_generation[k] = v.gsub('<pwd>', File.expand_path(File.dirname(@filename)))
       end
 
+      @custom_stats = [] unless defined? @custom_stats
+
       # freeze everything!
       IceNine.deep_freeze(@constraints)
       IceNine.deep_freeze(@customers)
-      IceNine.deep_freeze(@custom_stats) if defined? @custom_stats
+      IceNine.deep_freeze(@custom_stats)
       IceNine.deep_freeze(@data_centers)
       IceNine.deep_freeze(@duration)
       IceNine.deep_freeze(@evaluation)
