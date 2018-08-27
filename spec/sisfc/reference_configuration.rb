@@ -517,7 +517,7 @@ def with_reference_config(opts={})
     tf.close
 
     # create a configuration object from the reference configuration file
-    conf = SISFC::Configuration.load_from_file(tf.path)
+    conf = SISFC::Configuration.load_from_file(tf.path, validate: false)
 
     # apply any change from the opts parameter and validate the modified configuration
     opts.each do |k,v|

@@ -93,7 +93,7 @@ module SISFC
       # freeze everything!
       IceNine.deep_freeze(@constraints)
       IceNine.deep_freeze(@customers)
-      IceNine.deep_freeze(@custom_stats)
+      IceNine.deep_freeze(@custom_stats) if defined? @custom_stats
       IceNine.deep_freeze(@data_centers)
       IceNine.deep_freeze(@duration)
       IceNine.deep_freeze(@evaluation)
@@ -106,9 +106,9 @@ module SISFC
       IceNine.deep_freeze(@workflow_types)
     end
 
-    def self.load_from_file(filename)
+    def self.load_from_file(filename, validate: true)
       # allow filename, string, and IO objects as input
-      raise ArgumentError, "File #{filename} does not exist!" unless File.exists?(filename)
+      raise ArgumentError, "File #{filename} does not exist!" unless File.exist?(filename)
 
       # create configuration object
       conf = Configuration.new(filename)
@@ -117,7 +117,7 @@ module SISFC
       conf.instance_eval(File.new(filename, 'r').read)
 
       # validate and finalize configuration
-      conf.validate
+      conf.validate if validate
 
       # return new object
       conf
