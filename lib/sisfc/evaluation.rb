@@ -34,10 +34,9 @@ module SISFC
       cost *= 24.0
 
       # consider SLO violation penalties
-      penalties = (@penalties_func.nil? ? 0.0 : (@penalties_func.call(all_kpis, per_workflow_and_customer_kpis) or 0.0))
+      penalties = (@penalties_func.nil? ? {} : (@penalties_func.call(all_kpis, per_workflow_and_customer_kpis) || {}))
 
-      { it_cost:   cost,
-        penalties: penalties }
+      { it_cost: cost }.merge!(penalties)
     end
   end
 end

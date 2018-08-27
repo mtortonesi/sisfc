@@ -478,7 +478,7 @@ evaluation \
     { data_center: 2, vm_type: :large,  cost: 0.368 }
   ],
   # 500$ penalties if MTTR takes more than 50 msecs
-  penalties: lambda {|kpis,dc_kpis| 500.0 if kpis[:mttr] > 0.050 }
+  penalties: lambda {|kpis,dc_kpis| { slo_violation_penalties: 500.0 } if kpis[:mttr] > 0.050 }
 END
 
 # this is the whole reference configuration
