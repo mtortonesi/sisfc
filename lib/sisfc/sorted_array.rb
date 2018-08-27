@@ -6,7 +6,7 @@ module SISFC
     def initialize(*args, &sort_by)
       @sort_by = sort_by || Proc.new { |x,y| x <=> y }
       super(*args)
-      sort! &sort_by
+      sort!(&sort_by)
     end
 
     def insert(i, v)

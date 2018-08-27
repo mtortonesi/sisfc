@@ -26,7 +26,7 @@ module SISFC
       @destination = destination
     end
 
-    def <=> (event)
+    def <=>(event)
       @time <=> event.time
     end
 

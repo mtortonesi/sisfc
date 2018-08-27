@@ -7,7 +7,7 @@ module SISFC
     def initialize(opts={})
       if opts.has_key? :filename
         filename = opts[:filename]
-        raise ArgumentError, "File #{filename} does not exist!" unless File.exists?(filename)
+        raise ArgumentError, "File #{filename} does not exist!" unless File.exist?(filename)
         @file = File.open(filename, mode='r')
       elsif opts.has_key? :command
         command = opts[:command]

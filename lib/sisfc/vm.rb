@@ -6,7 +6,7 @@ require 'erv'
 
 class RequestInfo < Struct.new(:request, :service_time, :arrival_time)
   include Comparable
-  def <=> (o)
+  def <=>(o)
     arrival_time <=> o.arrival_time
   end
 end
