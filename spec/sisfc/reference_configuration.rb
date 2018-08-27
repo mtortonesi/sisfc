@@ -17,54 +17,29 @@ END
 DATA_CENTERS_CHARACTERIZATION = <<END
 data_centers \
   1 => {
-    maximum_vm_capacity: {
-      tiny:   300,
-      small:  300,
-      medium: 300,
-      large:  300,
-      huge:   300,
-    },
     location_id: 0,
+    name: "Data center 1",
+    type: :public,
   },
   2 => {
-    maximum_vm_capacity: {
-      tiny:   300,
-      small:  300,
-      medium: 300,
-      large:  300,
-      huge:   300,
-    },
     location_id: 1,
+    name: "Data center 2",
+    type: :public,
   },
   3 => {
-    maximum_vm_capacity: {
-      tiny:   300,
-      small:  300,
-      medium: 300,
-      large:  300,
-      huge:   300,
-    },
     location_id: 2,
+    name: "Data center 3",
+    type: :public,
   },
   4 => {
-    maximum_vm_capacity: {
-      tiny:   300,
-      small:  300,
-      medium: 300,
-      large:  300,
-      huge:   300,
-    },
     location_id: 3,
+    name: "Data center 4",
+    type: :public,
   },
   5 => {
-    maximum_vm_capacity: {
-      tiny:   300,
-      small:  300,
-      medium: 300,
-      large:  300,
-      huge:   300,
-    },
     location_id: 4,
+    name: "Data center 5",
+    type: :public,
   }
 END
 
@@ -354,16 +329,14 @@ END
 
 CUSTOMER_CHARACTERIZATION = <<END
 customers \
-  [
-    # first customer (id: 0) is in location with id=5 (?)
-    { location_id: 5 },
-    # second customer (id: 1) is in location with id=6 (?)
-    { location_id: 6 },
-    # third customer (id: 2) is in location with id=7 (?)
-    { location_id: 7 },
-    # fourth customer (id: 3) is in location with id=8 (?)
-    { location_id: 8 },
-  ]
+  1 => { location_id: 5 },
+  # first customer (id: 1) is in location with id=5 (?)
+  2 => { location_id: 6 },
+  # second customer (id: 2) is in location with id=6 (?)
+  3 =>{ location_id: 7 },
+  # third customer (id: 3) is in location with id=7 (?)
+  4 => { location_id: 8 }
+  # fourth customer (id: 4) is in location with id=8 (?)
 END
 
 
@@ -374,36 +347,39 @@ service_component_types \
     allowed_vm_types: [ :medium, :large ],
     service_time_distribution: {
       medium: { distribution: :gaussian,
-                mean:         0.009, # 1 request processed every 9ms
-                sd:           0.001 },
+                args: { mean: 0.009, # 1 request processed every 9ms
+                        sd:   0.001 } },
       large:  { distribution: :gaussian,
-                mean:         0.007, # 1 request processed every 7ms
-                sd:           0.001 } },
+                args: { mean: 0.007, # 1 request processed every 7ms
+                        sd:   0.001 } },
+    },
     estimated_workload: 50,
   },
   'App Server' => {
     allowed_vm_types: [ :medium, :large, :huge ],
     service_time_distribution: {
       medium: { distribution: :gaussian,
-                mean:         0.015, # 1 request processed every 15ms
-                sd:           0.005 },
+                args: { mean: 0.015, # 1 request processed every 15ms
+                        sd:   0.005 } },
       large:  { distribution: :gaussian,
-                mean:         0.012, # 1 request processed every 12ms
-                sd:           0.003 },
+                args: { mean: 0.012, # 1 request processed every 12ms
+                        sd:   0.003 } },
       huge:   { distribution: :gaussian,
-                mean:         0.009, # 1 request processed every 7ms
-                sd:           0.002 } },
+                args: { mean: 0.009, # 1 request processed every 9ms
+                        sd:   0.002 } },
+    },
     estimated_workload: 70,
   },
   'Financial Transaction Server' => {
     allowed_vm_types: [ :large, :huge ],
     service_time_distribution: {
       large:  { distribution: :gaussian,
-                mean:         0.015, # 1 request processed every 15ms
-                sd:           0.004 },
+                args: { mean: 0.015, # 1 request processed every 15ms
+                        sd:   0.004 } },
       huge:   { distribution: :gaussian,
-                mean:         0.008, # 1 request processed every 8ms
-                sd:           0.003 } },
+                args: { mean: 0.008, # 1 request processed every 8ms
+                        sd:   0.003 } },
+    },
     estimated_workload: 80,
   }
 END
