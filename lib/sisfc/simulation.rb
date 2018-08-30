@@ -19,9 +19,6 @@ module SISFC
     def initialize(opts = {})
       @configuration = opts[:configuration]
       @evaluator     = opts[:evaluator]
-
-      # create latency manager
-      @latency_manager = LatencyManager.new(@configuration.latency_models)
     end
 
 
@@ -43,6 +40,9 @@ module SISFC
           return UNFEASIBLE_ALLOCATION_EVALUATION
         end
       end
+
+      # create latency manager
+      latency_manager = LatencyManager.new(@configuration.latency_models)
 
       # setup simulation start and current time
       @current_time = @start_time = @configuration.start_time
@@ -162,7 +162,7 @@ module SISFC
 
             raise "Invalid configuration! No VMs of type #{first_component_name} found!" unless closest_dc
 
-            arrival_time = @current_time + @latency_manager.sample_latency_between(customer_location_id, closest_dc.location_id)
+            arrival_time = @current_time + latency_manager.sample_latency_between(customer_location_id, closest_dc.location_id)
             new_req = Request.new(req_attrs.merge!(initial_data_center_id: closest_dc.dcid,
                                                    arrival_time: arrival_time))
 
@@ -255,8 +255,8 @@ module SISFC
 
                     # keep track of transmission time
                     transmission_time =
-                      @latency_manager.sample_latency_between(data_center.location_id,
-                                                              dc.location_id)
+                      latency_manager.sample_latency_between(data_center.location_id,
+                                                             dc.location_id)
 
                     unless transmission_time >= 0.0
                       raise "Negative transmission time (#{transmission_time})!"
@@ -287,7 +287,7 @@ module SISFC
             else # workflow is finished
               # calculate transmission time
               transmission_time =
-                @latency_manager.sample_latency_between(
+                latency_manager.sample_latency_between(
                   # data center location
                   data_center_repository[req.data_center_id].location_id,
                   # customer location
@@ -348,11 +348,6 @@ module SISFC
       # the sum of all costs incurred
       -costs.values.inject(0.0){|s,x| s += x }
     end
-
-    private
-      def communication_latency_between(loc1, loc2)
-        @latency_manager.sample_latency_between(loc1.to_i, loc2.to_i)
-      end
 
   end
 end
