@@ -9,9 +9,8 @@ module SISFC
       # that represent the communication latency models between the different
       # locations
       @latency_models_matrix = latency_models.map do |lms_conf|
-        lms_conf.map do |rv_conf| 
-          rv_conf
-          ERV::RandomVariable.new(rv_conf) 
+        lms_conf.map do |rv_conf|
+          ERV::RandomVariable.new(rv_conf.merge(seed: rng.rand))
         end
       end
 
@@ -42,7 +41,7 @@ module SISFC
         # indexes become l1 and (l2-l1-1)
         # rejection sampling to implement (crudely) PDF truncation to positive numbers
         while (lat = @latency_models_matrix[l1][l2-l1-1].next) <= 0.0; end
-        lat
+        lat / 1000.0 # conversion from milliseconds to seconds
       end
     end
 
@@ -58,7 +57,8 @@ module SISFC
 
         # since we use a compact representation for @average_latency_between, the
         # indexes become l1 and (l2-l1-1)
-        @average_latency_between[l1][l2-l1-1]
+        mean = @average_latency_between[l1][l2-l1-1]
+        mean / 1000.0 # conversion from milliseconds to seconds
       end
     end
   end
