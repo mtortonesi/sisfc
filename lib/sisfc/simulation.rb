@@ -34,9 +34,15 @@ module SISFC
 
 
     def evaluate_allocation(vm_allocation)
-      # fail unless there is at least one vm for each software component
+      # TODO: allow to define which feasibility controls to run in simulation
+      # configuration. Here we hardcode a simple feasibility check: fail unless
+      # there is at least one vm for each software component.
       @configuration.service_component_types.each do |sc_id,_|
-        unless vm_allocation.find{|x| x[:component_type] == sc_id } # TODO
+        unless vm_allocation.find{|x| x[:component_type] == sc_id }
+          puts "====== Unfeasible allocation ======\n" +
+               "costs: #{UNFEASIBLE_ALLOCATION_EVALUATION}\n" +
+               "vm_allocation: #{vm_allocation.inspect}\n" +
+               "=======================================\n"
           return UNFEASIBLE_ALLOCATION_EVALUATION
         end
       end
