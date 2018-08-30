@@ -48,9 +48,13 @@ module SISFC
     end
 
     # returns nil in case no VM for component component_name is running
-    def get_random_vm(component_name)
+    def get_random_vm(component_name, random: nil)
       if @vms.has_key? component_name
-        @vms[component_name].sample
+        if random
+          @vms[component_name].sample(random: random)
+        else
+          @vms[component_name].sample
+        end
       end
     end
 

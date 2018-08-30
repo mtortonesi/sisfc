@@ -55,6 +55,7 @@ module SISFC
                  :latency_models,
                  :request_generation,
                  :service_component_types,
+                 :seeds,
                  :start_time,
                  :warmup_duration,
                  :workflow_types
@@ -91,6 +92,7 @@ module SISFC
       end
 
       @custom_stats = [] unless defined? @custom_stats
+      @seeds = {} unless defined? @seeds
 
       # freeze everything!
       IceNine.deep_freeze(@constraints)
@@ -102,6 +104,7 @@ module SISFC
       IceNine.deep_freeze(@kpi_customization)
       IceNine.deep_freeze(@latency_models)
       IceNine.deep_freeze(@request_generation)
+      IceNine.deep_freeze(@seeds)
       IceNine.deep_freeze(@service_component_types)
       IceNine.deep_freeze(@start_time)
       IceNine.deep_freeze(@warmup_duration)

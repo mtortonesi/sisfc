@@ -23,7 +23,14 @@ module SISFC
       @vmid             = vmid
       @dcid             = dc_id
       @size             = size
-      @service_times_rv = ERV::RandomVariable.new(service_time_distribution[@size])
+      @service_times_rv = if opts[:seed]
+        orig_std_conf = service_time_distribution[@size]
+        std_conf = orig_std_conf.dup
+        std_conf[:args] = orig_std_conf[:args].merge(seed: opts[:seed])
+        ERV::RandomVariable.new(std_conf)
+      else 
+        ERV::RandomVariable.new(service_time_distribution[@size])
+      end
 
       # initialize request queue and related tracking information
       @busy          = false
@@ -39,6 +46,14 @@ module SISFC
     def new_request(sim, r, time)
       # put request w/ metadata at the end of the queue
       @request_queue << RequestInfo.new(r, @service_times_rv.next, time)
+
+      if @trace
+        @request_queue.each_cons(2) do |x,y|
+          if y[2] < x[2]
+            raise "Inconsistent ordering in request_queue!!!!"
+          end
+        end
+      end
 
       # update queue size tracking information
       # @request_queue_info << { size: @request_queue.size, time: time }

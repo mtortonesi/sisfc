@@ -4,13 +4,18 @@ require 'erv'
 
 module SISFC
   class LatencyManager
-    def initialize(latency_models)
+    def initialize(latency_models, seed: nil)
+      # create rng for reproducible seeding
+      rng = seed ? Random.new(seed) : Random.new
+
       # here we build a (strictly upper triangular) matrix of random variables
       # that represent the communication latency models between the different
       # locations
       @latency_models_matrix = latency_models.map do |lms_conf|
-        lms_conf.map do |rv_conf|
-          ERV::RandomVariable.new(rv_conf.merge(seed: rng.rand))
+        lms_conf.map do |orig_rv_conf|
+          # rv_conf = orig_rv_conf.dup
+          # rv_conf[:args] = orig_rv_conf[:args].merge(seed: rng.rand(100_000_000))
+          ERV::RandomVariable.new(orig_rv_conf)
         end
       end
 
@@ -26,7 +31,7 @@ module SISFC
 
       # latency in the same location is implemented as a truncated gaussian
       # with mean = 20ms, sd = 5ms, and a = 2ms
-      @same_location_latency = ERV::RandomVariable.new(distribution: :gaussian, args: { mean: 20E-3, sd: 5E-3 })
+      @same_location_latency = ERV::RandomVariable.new(distribution: :gaussian, args: { mean: 20E-3, sd: 5E-3, seed: rng.rand(100_000_000) })
     end
 
     def sample_latency_between(loc1, loc2)

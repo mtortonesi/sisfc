@@ -47,8 +47,19 @@ module SISFC
         end
       end
 
+      # seeds
+      latency_seed = @configuration.seeds[:communication_latencies]
+      service_time_seed = @configuration.seeds[:service_times]
+      next_component_rng = if @configuration.seeds[:next_component_selection]
+        Random.new(@configuration.seeds[:next_component_selection])
+      else
+        Random.new
+      end
+
       # create latency manager
-      latency_manager = LatencyManager.new(@configuration.latency_models)
+      latency_manager = latency_seed ?
+        LatencyManager.new(@configuration.latency_models, seed: latency_seed) :
+        LatencyManager.new(@configuration.latency_models)
 
       # setup simulation start and current time
       @current_time = @start_time = @configuration.start_time
@@ -93,7 +104,9 @@ module SISFC
         # allocate the VMs
         opts[:vm_num].times do
           # create VM ...
-          vm = VM.new(vmid, opts[:dc_id], opts[:vm_size], stdist)
+          vm = service_time_seed ?
+            VM.new(vmid, opts[:dc_id], opts[:vm_size], stdist, seed: service_time_seed) :
+            VM.new(vmid, opts[:dc_id], opts[:vm_size], stdist)
           # ... add it to the vm list ...
           @vms << vm
           # ... and register it in the corresponding data center
@@ -194,7 +207,7 @@ module SISFC
             next_component_name = workflow[:component_sequence][req.next_step][:name]
 
             # get random vm providing next service component type
-            vm = data_center.get_random_vm(next_component_name)
+            vm = data_center.get_random_vm(next_component_name, random: next_component_rng)
 
             # schedule request forwarding to vm
             new_event(Event::ET_REQUEST_FORWARDING, req, e.time, vm)
@@ -243,7 +256,7 @@ module SISFC
               next_component_name = workflow[:component_sequence][req.next_step][:name]
 
               # get random VM providing next service component type
-              new_vm = data_center.get_random_vm(next_component_name)
+              new_vm = data_center.get_random_vm(next_component_name, random: next_component_rng)
 
               # this is the request's time of arrival at the new VM
               forwarding_time = e.time
@@ -252,9 +265,11 @@ module SISFC
               # center, so look in the other data centers
               unless new_vm
                 # get list of other data centers, randomly picked
-                other_dcs = data_center_repository.values.select{|x| x != data_center && x.has_vms_of_type?(next_component_name) }&.shuffle
+                other_dcs = data_center_repository.values.
+                  select{|x| x != data_center && x.has_vms_of_type?(next_component_name) }&.
+                  shuffle(random: next_component_rng)
                 other_dcs.each do |dc|
-                  new_vm = dc.get_random_vm(next_component_name)
+                  new_vm = dc.get_random_vm(next_component_name, random: next_component_rng)
                   if new_vm
                     # need to update data_center_id of request
                     req.data_center_id = dc.dcid
