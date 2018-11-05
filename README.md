@@ -1,16 +1,17 @@
-# A Simulator for IT Service in Federated Clouds (SISFC)
+# SISFC
 
 [![Gem Version](https://badge.fury.io/rb/sisfc.svg)](https://badge.fury.io/rb/sisfc)
 [![Build Status](https://travis-ci.org/mtortonesi/sisfc.png?branch=master)](https://travis-ci.org/mtortonesi/sisfc)
 [![Code Climate](https://codeclimate.com/github/mtortonesi/sisfc.png)](https://codeclimate.com/github/mtortonesi/sisfc)
 
-SISFC is a simulator designed to reenact the behaviour of IT services in
-federated Cloud environments.
+SISFC (Simulator for IT Service in Federated Clouds) is a simulator designed to
+reenact the behaviour of IT services in federated Cloud environments.
 
 
 ## Installation
 
-You can install the SISFC simulator through RubyGems:
+As SISFC was developed in Ruby, you will first need a working Ruby interpreter.
+Once you have Ruby installed, you can install SISFC through RubyGems:
 
     gem install sisfc
 
@@ -35,9 +36,8 @@ generation process. To use that script, you will need R with the VGAM and
 truncnorm packages installed.
 
 Note that the SISFC was not designed to be run directly by users, but instead
-to be integrated within automated tools that implement a continuous
-optimization framework (for instance, built on top of our [mhl metaheuristics
-library](https://github.com/mtortonesi/ruby-mhl)).
+to be integrated within higher level frameworks that implement continuous
+optimization (such as [BDMaaS+](https://github.com/DSG-UniFE/bdmaas-plus-core)).
 
 
 ## References
@@ -56,10 +56,15 @@ The SISFC simulator was used in the following research papers:
 
 3.  M. Tortonesi, L. Foschini, "Business-driven Service Placement for Highly
     Dynamic and Distributed Cloud Systems", IEEE Transactions on Cloud
-    Computing, 2016 (in print).
+    Computing, (in print).
 
-Please, consider citing some of these papers if you find this simulator useful
-for your research.
+4.  W. Cerroni et al., "Service Placement for Hybrid Clouds Environments based
+    on Realistic Network Measurements", in Proceedings of 14th International
+    Conference on Network and Service Management (CNSM 2018) - Miniconference
+    track, 5-9 November 2018, Rome, Italy.
+
+Please, consider citing some of these papers if you find this tool useful for
+your research.
 
 
 ## Acknowledgements
