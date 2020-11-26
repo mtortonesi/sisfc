@@ -22,10 +22,10 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'erv', '~> 0.3.5'
   spec.add_dependency 'ice_nine', '~> 0.11.2'
 
-  spec.add_development_dependency 'bundler', '~> 1.16'
-  spec.add_development_dependency 'dotenv', '~> 2.5'
-  spec.add_development_dependency 'rake', '~> 12.3'
-  spec.add_development_dependency 'minitest', '~> 5.11'
-  spec.add_development_dependency 'minitest-reporters', '~> 1.3'
-  spec.add_development_dependency 'minitest-spec-context', '~> 0.0.3'
+  spec.add_development_dependency 'bundler'
+  spec.add_development_dependency 'dotenv', '~> 2.7.6'
+  spec.add_development_dependency 'rake', '~> 13.0.1'
+  spec.add_development_dependency 'minitest', '~> 5.14.2'
+  spec.add_development_dependency 'minitest-reporters', '~> 1.4.2'
+  spec.add_development_dependency 'minitest-spec-context', '~> 0.0.4'
 end
