@@ -63,7 +63,7 @@ module SISFC
         Proc.new do
           if file.respond_to? :pid
             Process.kill('INT', file.pid)
-          elsif
+          else
             file.close
           end
         end
