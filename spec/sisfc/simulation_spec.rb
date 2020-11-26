@@ -17,7 +17,7 @@ describe SISFC::Simulation do
   it 'should return for unfeasible allocations' do
     with_reference_config do |conf|
       sim = SISFC::Simulation.new(configuration: conf, evaluator: Object.new)
-      sim.evaluate_allocation(UNFEASIBLE_ALLOCATION).must_equal(SISFC::Simulation::UNFEASIBLE_ALLOCATION_EVALUATION)
+      _(sim.evaluate_allocation(UNFEASIBLE_ALLOCATION)).must_equal(SISFC::Simulation::UNFEASIBLE_ALLOCATION_EVALUATION)
     end
   end
 end

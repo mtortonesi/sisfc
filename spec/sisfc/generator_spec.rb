@@ -30,10 +30,10 @@ describe SISFC::RequestGenerator do
       with_reference_config(request_generation: { filename: tf.path }) do |conf|
         rg = SISFC::RequestGenerator.new(conf.request_generation)
         r = rg.generate
-        r[:rid].must_equal 1
-        r[:generation_time].must_equal GENERATION_TIMES[0]
-        r[:workflow_type_id].must_equal WORKFLOW_TYPE_IDS[0]
-        r[:customer_id].must_equal CUSTOMER_IDS[0]
+        _(r[:rid]).must_equal 1
+        _(r[:generation_time]).must_equal GENERATION_TIMES[0]
+        _(r[:workflow_type_id]).must_equal WORKFLOW_TYPE_IDS[0]
+        _(r[:customer_id]).must_equal CUSTOMER_IDS[0]
       end
 
     ensure
@@ -52,10 +52,10 @@ describe SISFC::RequestGenerator do
       with_reference_config(request_generation: { command: "cat #{tf.path}" }) do |conf|
         rg = SISFC::RequestGenerator.new(conf.request_generation)
         r = rg.generate
-        r[:rid].must_equal 1
-        r[:generation_time].must_equal GENERATION_TIMES[0]
-        r[:workflow_type_id].must_equal WORKFLOW_TYPE_IDS[0]
-        r[:customer_id].must_equal CUSTOMER_IDS[0]
+        _(r[:rid]).must_equal 1
+        _(r[:generation_time]).must_equal GENERATION_TIMES[0]
+        _(r[:workflow_type_id]).must_equal WORKFLOW_TYPE_IDS[0]
+        _(r[:customer_id]).must_equal CUSTOMER_IDS[0]
       end
     ensure
       # delete temporary file
