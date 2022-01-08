@@ -2,7 +2,6 @@
 
 module SISFC
   class Request
-
     # # states
     # STATE_WORKING   = 1
     # STATE_SUSPENDED = 2
@@ -75,5 +74,4 @@ module SISFC
       "rid: #{@rid}, generation_time: #{@generation_time}, data_center_id: #{@data_center_id}, arrival_time: #{@arrival_time}"
     end
   end
-
 end

@@ -145,6 +145,7 @@ module SISFC
       requests_being_worked_on = 0
       requests_forwarded_to_other_dcs = 0
       current_event = 0
+      requests_arrived = 0
 
       # launch simulation
       until @event_queue.empty?
@@ -182,7 +183,7 @@ module SISFC
             raise "Invalid configuration! No VMs of type #{first_component_name} found!" unless closest_dc
 
             arrival_time = @current_time + latency_manager.sample_latency_between(customer_location_id, closest_dc.location_id)
-            new_req = Request.new(req_attrs.merge!(initial_data_center_id: closest_dc.dcid,
+            new_req = Request.new(**req_attrs.merge!(initial_data_center_id: closest_dc.dcid,
                                                    arrival_time: arrival_time))
 
             # schedule arrival of current request
@@ -195,6 +196,10 @@ module SISFC
           when Event::ET_REQUEST_ARRIVAL
             # get request
             req = e.data
+            requests_arrived += 1
+            if requests_arrived % 10_000 == 0
+              puts "requests_arrived: #{requests_arrived}"; $stdout.flush
+            end
 
             # find data center
             data_center = data_center_repository[req.data_center_id]
@@ -348,7 +353,7 @@ module SISFC
 
 
           when Event::ET_END_OF_SIMULATION
-            # puts "#{e.time}: end simulation"
+            puts "#{e.time}: end simulation"
             break
 
         end
